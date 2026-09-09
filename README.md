@@ -151,6 +151,19 @@ and set `GOOGLE_CLOUD_PROJECT` to use application-default credentials instead of
 deterministic parser and computed narration, and the UI says so. Adding a key upgrades both
 stages without changing the ranking, because the ranking was never the model's job.
 
+### Deploy to Cloud Run
+
+Authenticate the Google Cloud CLI, set `GOOGLE_CLOUD_PROJECT` in `.env`, and run:
+
+```bash
+./scripts/deploy_cloudrun.sh
+```
+
+The deploy enables the required Cloud Run, Cloud Build, Artifact Registry, and Vertex AI
+APIs. It intentionally does not copy `GOOGLE_API_KEY` into Cloud Run. The service uses its
+Google Cloud identity with Vertex AI application-default credentials instead. Grant that
+identity the Vertex AI User role if your project does not provide it already.
+
 ## What the data adds over recall
 
 `scripts/compare.py` asks Gemini the same brief with no tools, verifies every name it

@@ -38,7 +38,7 @@
 - [x] Empty and error states written as product copy, not stack traces
 - [x] Keyboard access, focus states, reduced-motion, mobile breakpoint
 - [x] `Dockerfile` + `scripts/deploy_cloudrun.sh`
-- [ ] Install and authenticate the Google Cloud CLI (`gcloud` is not currently on `PATH`)
+- [x] Google Cloud CLI installed and authenticated (deploy script resolves Homebrew's cask path)
 - [ ] **Deploy to Cloud Run and capture the hosted URL** — needs an authenticated GCP project
 - [x] Gemini Enterprise Agent Platform (Vertex AI) integrated — express-key and ADC paths,
       auto-detected from the key prefix, backend reported in `/api/health`
