@@ -29,6 +29,26 @@ Implement one high-quality constraint-change demo, producer approval, and before
 
 Visualize shared-credit relationships and export a complete production package.
 
+## Phase 7 — Shared projects, finance, and approvals
+
+Move project, shortlist, roster, budget, and approval records out of browser-only storage into a
+transactional database. Add project accounts, estimate/committed/actual budget states, variance,
+CSV import/export, approval history, and an audit trail. ClickHouse remains the analytics and
+credit-search store; no payment or hiring decision is autonomous.
+
+## Phase 8 — Scheduling, availability, and call sheets
+
+Add an availability-aware stripboard, cast and crew conflict detection, location and turnaround
+constraints, and versioned call sheets. Every schedule revision requires human approval and shows
+the people, locations, requirements, and estimated cost affected by the change.
+
+## Phase 9 — Production operations and submission readiness
+
+Connect daily progress, pages shot, schedule drift, cost variance, department views, open approvals,
+and post-production delivery milestones to the shared production record. Complete end-to-end QA,
+record the public English demo, verify repository metadata and license display, and submit the
+stable Cloud Run build with buffer.
+
 ## Language and credibility applied across phases
 
 Use “IMDb credit-backed” rather than “verified.” Keep availability, location, and rate limitations explicit. Every recommendation must remain traceable to query evidence.

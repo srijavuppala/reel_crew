@@ -77,10 +77,14 @@
 - [x] Product and finance guardrails documented (`PRODUCTION_PRD.md`)
 - [x] Phase 0: screenplay scene breakdown, schedule draft, balanced top sheet, risks
 - [x] Phase 0 API, shared workspace UI, and built-in tests
-- [ ] Phase 1: derive department briefs and connect them to Reel Crew search
-- [ ] Phase 2: persistent estimates, commitments, actuals, approvals, and audit history
-- [ ] Phase 3: availability-aware stripboard and approved call sheets
-- [ ] Phase 4: event-driven replanning with human approval
+- [x] Phase 1: derive department briefs and connect them to Reel Crew search
+- [x] Attach discovery shortlists to the working roster on the current device
+- [ ] Phase 2: persistent shared projects, shortlists, and rosters (replace browser-only storage)
+- [ ] Phase 2: estimates, commitments, actuals, approvals, variance, and audit history
+- [ ] Phase 3: availability-aware stripboard, conflict detection, and approved call sheets
+- [ ] Phase 4: event-driven replanning, before/after comparison, and human approval
+- [ ] Phase 5: visual crew-chemistry graph and complete production-package export
+- [ ] Phase 6: daily production operations, department views, and post-production handoff
 
 ## Blocked on you
 1. **Rotate the API key before this goes anywhere public** — it was shared in a chat transcript.
