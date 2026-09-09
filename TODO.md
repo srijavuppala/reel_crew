@@ -34,6 +34,21 @@
 - [x] Fixed: aliasing the output column `category` shadowed the table column and silently
       disabled the craft filter, returning writers and producers for a DP query
 
+## Phase 2 — Screenplay-first flow  ✅ complete
+- [x] `production/roles.py` — scene requirements become a required-crew list with evidence
+- [x] `infer_brief()` — genres and tone read off scene composition, deterministic
+- [x] Crew tab in the production workspace showing both role lists before any query runs
+- [x] Honest split: `in_corpus` (IMDb covers the craft) vs `staffable` (we build a slate)
+
+## Phase 3 — Build My Crew  ✅ complete
+- [x] `POST /api/production/crew` — one ranked slate per staffable craft
+- [x] 100-point match score; every component reports the column it came from
+- [x] Q5 role funnel: corpus → genre → thresholds → shortlist → scored → shown
+- [x] Q6 crew chemistry across the assembled unit
+- [x] Filters relax rather than returning an empty slate, and the relaxation is displayed
+- [x] Explain-this-recommendation panel showing the arithmetic
+- [x] Candidate names open the existing profile drawer
+
 ## Phase 2 — Design and impact  ◑ in progress
 - [x] Empty and error states written as product copy, not stack traces
 - [x] Keyboard access, focus states, reduced-motion, mobile breakpoint

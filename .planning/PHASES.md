@@ -4,13 +4,18 @@
 
 Completed September 9, 2026. All production queries now cross the official read-only `mcp-clickhouse` server; live health and corpus queries verified on Cloud Run.
 
-## Phase 2 — Screenplay-first production flow
+## Phase 2 — Screenplay-first production flow ✓
 
-Make the screenplay the single starting point and derive a shared production brief plus required crew roles.
+Completed September 8, 2026. `derive_roles()` reads scene requirements and states which crew the
+script implies; `infer_brief()` reads genre and tone off scene composition so crew search inherits
+the script's own signals. Roles IMDb covers carry a `category` and get staffed; every other
+department the script demands is reported with `in_corpus=False` rather than dropped.
 
-## Phase 3 — Build My Crew
+## Phase 3 — Build My Crew ✓
 
-Assemble per-role recommendations from ClickHouse, add match scores, evidence, and recommendation explanations.
+Completed September 8, 2026. One ranked slate per staffable craft, a 100-point match score whose
+four components each carry the column they were computed from, and Q5 — the ClickHouse funnel
+behind each slate, stage by stage. Q6 reports which of the assembled crew already work together.
 
 ## Phase 4 — Producer command center
 

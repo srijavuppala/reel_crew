@@ -572,6 +572,12 @@ const $ = s => document.querySelector(s);
 const fmt = n => (n ?? 0).toLocaleString();
 // compact form, so a candidate's whole summary line still fits without wrapping
 const brief = n => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? Math.round(n/1e3)+'K' : String(n ?? 0);
+/* On Cloud Run and in local development this page and the API share an origin,
+   so requests stay relative. A static host (Vercel) serves only the page, so
+   point those same requests at the deployed API instead. */
+const CLOUD_RUN_API = 'https://reel-crew-10453428907.us-central1.run.app';
+const API = /^(localhost|127\.0\.0\.1|\[::1\])$/.test(location.hostname)
+         || /\.run\.app$/.test(location.hostname) ? '' : CLOUD_RUN_API;
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 const ROLES = ["cinematographer","editor","composer","production_designer","casting_director","director","writer","producer"];
@@ -650,7 +656,7 @@ async function buildCrew(){
   $('#c-status').textContent = 'Querying ClickHouse for every staffable role…';
   out.innerHTML = '';
   try {
-    const response = await fetch('/api/production/crew', {
+    const response = await fetch(API + '/api/production/crew', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ title: $('#p-title').value, screenplay: $('#p-script').value })
     });
@@ -744,7 +750,7 @@ $('#p-plan').addEventListener('click', async () => {
   const button = $('#p-plan'); button.disabled = true;
   $('#p-status').textContent = 'Breaking down scenes, schedule, budget, and risk…';
   try {
-    const response = await fetch('/api/production/plan', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
+    const response = await fetch(API + '/api/production/plan', {method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({
       title:$('#p-title').value, screenplay:$('#p-script').value,
       total_budget:+$('#p-budget').value, currency:$('#p-currency').value,
       target_shoot_days:+$('#p-days').value
@@ -802,7 +808,7 @@ $('#f-genres').addEventListener('click', e => {
 });
 $('#f-rating').addEventListener('input', e => { $('#o-rating').textContent = (+e.target.value).toFixed(1); });
 
-fetch('/api/stats').then(r => r.json()).then(s => {
+fetch(API + '/api/stats').then(r => r.json()).then(s => {
   $('#c-credits').textContent = fmt(s.crew_credits);
   $('#c-people').textContent  = fmt(s.people);
   $('#c-titles').textContent  = fmt(s.titles);
@@ -838,7 +844,7 @@ async function search(override){
   $('#status').textContent = override ? 'Re-running with your filters…' : 'Parsing the brief, searching credits, and writing the evidence brief…';
   const t0 = performance.now();
   try {
-    const res = await fetch('/api/search', {
+    const res = await fetch(API + '/api/search', {
       method:'POST', headers:{'Content-Type':'application/json'},
       body: JSON.stringify({ brief, limit: LIMIT, query: override || null })
     });
@@ -1039,7 +1045,7 @@ async function openProfile(nconst){
   $('#drawer-body').innerHTML = `<p class="lbl">Assembling profile…</p>`;
   setDrawer(true);
   try {
-    const p = await (await fetch('/api/profile/'+nconst)).json();
+    const p = await (await fetch(API + '/api/profile/'+nconst)).json();
     if (p.detail) throw new Error(p.detail);
     const maxG = Math.max(...(p.genre_mix||[]).map(g => g.credits), 1);
     const tl = p.timeline || [];
@@ -1090,7 +1096,7 @@ async function loadSimilar(nconst, cap){
   if (!box) return;
   box.innerHTML = `<p class="lbl">Comparing genre profiles…</p>`;
   try {
-    const r = await (await fetch(`/api/similar/${nconst}?under_reference=${cap}&limit=10`)).json();
+    const r = await (await fetch(API + `/api/similar/${nconst}?under_reference=${cap}&limit=10`)).json();
     if (r.detail) throw new Error(r.detail);
     const cs = r.candidates || [];
     box.innerHTML = cs.map(c => `<button class="member" style="padding:9px 0" data-go="${esc(c.nconst)}">
