@@ -1,80 +1,151 @@
 # Reel Crew — three-minute demo
 
-Record at 1920×1080 with browser zoom set so the parsed query, evidence columns,
-workflow trace, and SQL are readable. Use a fresh browser session and rehearse the
-exact brief before recording.
+Record at 1920×1080. Set browser zoom so the evidence columns, the role funnel, and the
+SQL panel stay readable in the final cut. Fresh browser session, no bookmarks bar, no
+notifications.
 
-## 0:00–0:20 — the problem
+**Narration total: 478 words.** That is about 3:05 at a normal speaking pace, so you have no slack. Read it once
+against a timer before recording; if you are running long, cut beat 6 (Replan) first.
 
-“A line producer staffing a horror feature calls the cinematographers they already
-know. Hundreds of qualified crew members are invisible because film credits are not
-searchable as production requirements. Reel Crew turns those requirements into an
-evidence-ranked shortlist.”
+**The one rule to keep saying:** Gemini parses and narrates, ClickHouse ranks. Judges on
+the ClickHouse track are looking for real analytical work, not an LLM wrapper. Every beat
+below is built to show a query doing something a model cannot.
 
-Show the empty product screen and the corpus totals in the header.
+---
 
-## 0:20–0:35 — the architecture promise
+## Setup before you hit record
 
-“Gemini parses and narrates. ClickHouse ranks. The model never invents a candidate;
-every person on screen came from parameterized SQL over real IMDb credits.”
+Open the app and leave it on **Production plan**. The form already carries the demo:
+title `Night Run`, budget `500000`, `3` shoot days, and a three-scene screenplay. You will
+not type anything on this side, which buys you about fifteen seconds.
 
-Keep the workflow trace area ready to point out after the search.
+Confirm the header corpus counters have loaded (they come from `/api/stats` live — a blank
+header is the most likely way this recording goes wrong).
 
-## 0:35–1:20 — run the brief
+---
 
-Enter:
+## 1 — The problem · 0:00–0:18
 
-> I need a DP who has shot three or more horror features rated above 6.5 since 2018
+Hold on the empty workspace.
 
-Run the search. Point out:
+> A line producer staffing a horror feature calls the four cinematographers they already
+> know. The other three hundred qualified people are invisible, because film credits have
+> never been searchable as production requirements. IMDb tells you what one person worked
+> on. It cannot tell you who has actually done this kind of work.
 
-1. The brief became typed filters.
-2. The runtime badges show Gemini, ClickHouse, and the ADK workflow.
-3. Candidates are ranked with matching credits, rating, audience reach, and recency.
-4. Open “Show the SQL” and briefly show the query and returned row count.
-5. Open one IMDb link to verify a candidate, then return to Reel Crew.
+## 2 — The architecture rule · 0:18–0:30
 
-## 1:20–2:05 — hire a unit
+Point at the corpus counters in the header.
 
-Open the top candidate's profile. Show career span, genre mix, rating history, and
-collaborators.
+> A hundred and one million raw credits, denormalized into one-point-three million
+> rankable rows. Gemini parses the brief and narrates the result. ClickHouse does the
+> ranking. No candidate reaches this screen that did not come out of a SQL result set.
 
-“Productions hire in packs. These are people this cinematographer repeatedly shares
-credits with. You are not only finding a DP—you are finding a camera department that
-already knows how to work together.”
+## 3 — Script in · 0:30–1:05
 
-Select one collaborator to demonstrate that the graph is navigable.
+Click **Build production plan**. Let the six agent steps land, then stay on **Overview**.
 
-## 2:05–2:30 — discover beyond the usual network
+> This is a screenplay excerpt, a budget, and a shoot-day target. Six deterministic
+> agents run over it. The script agent breaks out the scenes. The crew agent reads what
+> those scenes demand. Schedule, finance and risk build a stripboard, a balanced top
+> sheet, and a risk register.
 
-In the profile, show “Works like this person.” Explain that ClickHouse builds a
-28-genre career vector and uses cosine distance to find same-craft crew with similar
-work, while the reach cap can surface less-famous alternatives. Add one candidate to
-the shortlist and export the CSV.
+- Point at the scene count, planned shoot days, and the top-sheet total.
+- The brief reads **Thriller**, inferred from scene composition — say "thriller", not "horror", or the screen will contradict you.
+- Say the honest line: **"Every number here is a planning allowance, not a bid."**
 
-## 2:30–2:48 — prove the implementation
+## 4 — The mechanism, live · 1:05–1:45
 
-“The Google ADK graph has four deterministic steps: parse, search, collaborate, and
-narrate. ClickHouse is called at runtime for ranking, graph joins, profile statistics,
-and vector similarity across 1.3 million rankable credits derived from 101.6 million
-raw rows.”
+Open the **Crew** page inside the plan. **This is the beat the demo is for — do not rush it.**
 
-Show the trace and engine badges, not an architecture slide.
+> The scenes carried requirements: a dog, night lighting, a vehicle, rain, a crowd, a
+> fire, a fight. Nineteen crew positions came off those requirements, with the scene
+> numbers that justify each one. Not a template — the script asked for them.
 
-## 2:48–3:00 — close honestly
+Point at the split between the staffed slates and the reported roles.
 
-“The IMDb data is used under its personal and non-commercial dataset license. Reel
-Crew does not guess availability, rates, or location. Next, Script to Screen will
-derive every department from a screenplay and assemble a verifiable production crew.”
+> Seven of those we can staff, because IMDb's principal-crew data covers the craft.
+> Twelve we cannot — the gaffer, the stunt coordinator, the animal wrangler. Those are
+> reported with the reason and the scene, not quietly dropped. We would rather show a
+> producer the gap than pretend we filled it.
 
-End on the populated shortlist.
+Open the **Director of Photography** slate and its funnel.
+
+> And here is the part that is not a language model. ClickHouse narrows the corpus stage
+> by stage — everyone in the craft, then the genre, then the rating, credit and vote
+> floors, then the scored pool, then the shortlist you see. The match score is arithmetic
+> over the columns in that row, and every component names the column it came from.
+
+- Show the executed SQL and the row count.
+
+## 5 — Hiring a unit, not a name · 1:45–2:10
+
+Open a candidate profile from the slate, then the collaborator panel.
+
+> Productions hire in packs. A cinematographer brings the people they keep shooting with.
+> This is a self-join on shared credits, so it is the team that has actually delivered
+> together, reconstructed from credits alone.
+
+Scroll to **Works like this person** and switch on the reach cap.
+
+> Every person is a twenty-eight dimensional genre vector, compared by cosine distance
+> inside the same craft. Cosine normalizes away career length, so a six-credit DP can
+> match a thirty-credit one on the shape of the work. Cap the reach and you get the
+> working cinematographer a production can actually book.
+
+## 6 — The producer stays in control · 2:10–2:35
+
+Go to **Replan**. Kind `Budget`, value `400000`, reason `Financing reduced`. Hit
+**Compare plans**.
+
+> Financing drops by a hundred thousand. The agent does not touch the approved baseline.
+> It produces a before-and-after proposal — the budget delta, the shoot-day delta, and
+> what it would have to change.
+
+Click **Approve**.
+
+> The plan only moves when a producer says so.
+
+## 7 — Shared and auditable · 2:35–2:50
+
+Save the shared project, then open **Handoff** and export.
+
+> The project is a real record, not browser storage. Firestore in the cloud, and every
+> save writes an audit event. The handoff exports the plan, roster, finance, approvals
+> and the evidence behind every recommendation.
+
+## 8 — Close honestly · 2:50–3:00
+
+End on the Overview.
+
+> Credits are real, under IMDb's non-commercial dataset license. Availability, rates and
+> location are not modelled, because no public source has them. We would rather show you
+> the query than guess.
+
+---
+
+## The 2:00 cut
+
+If the hard cap is two minutes, drop beats 6 and 7 and tighten beat 3. Keep 1, 2, 4, 5
+and 8 intact. Beat 4 is the submission — everything else is context around it.
+
+## Beats most likely to break on camera
+
+| Risk | Fix before recording |
+|---|---|
+| Header counters blank | Load `/api/health` first; confirm ClickHouse is connected |
+| Cold Cloud Run start makes beat 3 hang | Build the plan once before recording to warm the container |
+| A role slate comes back thin | DP and Editor are the reliable ones — rehearse on those, not Casting Director |
+| Funnel text too small | Zoom to 110–125% before the take, not during |
+| Gemini quota drops mid-take | The deterministic parser still runs; if the badge flips, say so rather than reshooting |
 
 ## Recording checklist
 
 - [x] Hosted URL is live: https://reel-crew-10453428907.us-central1.run.app
-- [ ] `/api/health` reports ClickHouse connected, Gemini enabled, and the intended backend.
-- [ ] The exact demo brief returns good candidates before recording.
-- [ ] Browser notifications and personal bookmarks are hidden.
-- [ ] Microphone is clear and the final cut is at most three minutes.
-- [ ] Video is public or unlisted on YouTube/Vimeo and has English audio or subtitles.
-- [ ] Repository and hosted-project URLs are visible in the video description.
+- [ ] `/api/health` reports ClickHouse connected and the intended Gemini backend
+- [ ] Plan built once to warm the container, then browser refreshed
+- [ ] The rehearsed role slate returns good candidates
+- [ ] Notifications and bookmarks hidden
+- [ ] Final cut is at most three minutes, clear audio or subtitles
+- [ ] Public or unlisted on YouTube/Vimeo, English audio
+- [ ] Repository and hosted URLs in the video description
