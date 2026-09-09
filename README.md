@@ -134,6 +134,26 @@ and set `GOOGLE_CLOUD_PROJECT` to use application-default credentials instead of
 deterministic parser and computed narration, and the UI says so. Adding a key upgrades both
 stages without changing the ranking, because the ranking was never the model's job.
 
+## What the data adds over recall
+
+`scripts/compare.py` asks Gemini the same brief with no tools, verifies every name it
+returns against the credit database, then runs the agent.
+
+Gemini is usually *right* about the famous names — this is not a hallucination demo, and
+pitching it as one invites a correction. What it cannot do is rank, show evidence, apply
+thresholds, or reach past the canon. A representative run:
+
+```
+3 of 6 ranked candidates never came up from memory
+  + Jishnu Bhattacharjee   Stree 2, Bhediya
+  + Shehnad Jalal          Bramayugam, Dies Irae
+  + Ical Tanjung           Impetigore, Satan's Slaves 2: Communion
+```
+
+Indian, Malayalam and Indonesian horror — major industries with working DPs that a
+memory-based answer does not surface. A line producer does not need help remembering Jarin
+Blaschke. They need the other three hundred.
+
 ## Honest scope
 
 - Credit data: **real** — IMDb public datasets, refreshed daily.
