@@ -68,13 +68,14 @@ row count on every search.
 |---|---|
 | Agent framework | **Google ADK 2.8** `Workflow` — a deterministic four-node graph |
 | LLM | **Gemini** (`gemini-2.5-flash-lite`) via **Gemini Enterprise Agent Platform** (Vertex AI), or AI Studio |
-| Data | **ClickHouse Cloud**, `clickhouse-connect` called on every request |
+| Data | **ClickHouse Cloud** through the official **mcp-clickhouse** server on every request |
 | Backend | FastAPI |
 | Frontend | Single page, no build step |
 
 ### Runtime evidence
 
-- `agent/queries.py` — `clickhouse_connect` client, three parameterized queries.
+- `agent/mcp_clickhouse.py` — persistent MCP protocol client for the official read-only `mcp-clickhouse` server.
+- `agent/queries.py` — validated query templates executed through MCP at runtime.
 - `agent/graph.py` — `from google.adk import Workflow`, edges `START → parse → search → collaborators → narrate`.
 - `agent/parse.py` / `agent/narrate.py` — `google.genai` structured output.
 

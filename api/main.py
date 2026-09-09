@@ -40,8 +40,9 @@ class SearchRequest(BaseModel):
 @app.get("/api/health")
 def health():
     try:
-        queries.get_client().query("SELECT 1")
-        ch = "connected"
+        from agent.mcp_clickhouse import run_query
+        run_query("SELECT 1")
+        ch = "connected via official mcp-clickhouse"
     except Exception as exc:  # noqa: BLE001
         ch = f"error: {exc}"
     return {

@@ -9,7 +9,7 @@ from __future__ import annotations
 import time
 from typing import Any
 
-from .config import get_client
+from .mcp_clickhouse import render_query, run_query
 
 # ---------------------------------------------------------------- Q1: ranked search
 Q1_SEARCH = """
@@ -151,11 +151,11 @@ LIMIT {limit:UInt8}
 
 def _run(sql: str, params: dict[str, Any]) -> tuple[list[dict], float, str]:
     """Execute a parameterized query; return rows, elapsed ms, and the SQL text."""
-    client = get_client()
+    rendered = render_query(sql, params)
     t0 = time.perf_counter()
-    res = client.query(sql, parameters=params)
+    columns, result_rows = run_query(rendered)
     ms = (time.perf_counter() - t0) * 1000
-    rows = [dict(zip(res.column_names, r)) for r in res.result_rows]
+    rows = [dict(zip(columns, r)) for r in result_rows]
     return rows, ms, sql.strip()
 
 
@@ -197,10 +197,12 @@ def find_similar(nconst: str, under_reference: bool = False, year_from: int = 19
 
 def corpus_stats() -> dict[str, int]:
     """Row counts shown in the UI as the anti-wrapper signal."""
-    c = get_client()
+    def scalar(sql: str) -> int:
+        _, rows = run_query(sql)
+        return int(rows[0][0])
     return {
-        "crew_credits": c.query("SELECT count() FROM crew_credits").result_rows[0][0],
-        "raw_principals": c.query("SELECT count() FROM title_principals").result_rows[0][0],
-        "people": c.query("SELECT uniqExact(nconst) FROM crew_credits").result_rows[0][0],
-        "titles": c.query("SELECT uniqExact(tconst) FROM crew_credits").result_rows[0][0],
+        "crew_credits": scalar("SELECT count() FROM crew_credits"),
+        "raw_principals": scalar("SELECT count() FROM title_principals"),
+        "people": scalar("SELECT uniqExact(nconst) FROM crew_credits"),
+        "titles": scalar("SELECT uniqExact(tconst) FROM crew_credits"),
     }

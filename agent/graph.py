@@ -104,8 +104,9 @@ def node_search(node_input: RunState) -> RunState:
         min_votes=q.min_votes, limit=state.limit,
     )
     state.candidates = [Candidate(**r) for r in rows]
+    state.engine["data"] = "official mcp-clickhouse / ClickHouse Cloud"
     state.trace.append(TraceStep(
-        step="search", detail="ClickHouse Q1: ranked aggregation over crew_credits",
+        step="search", detail="Official mcp-clickhouse Q1: ranked aggregation over crew_credits",
         ms=int(ms), rows=len(rows), sql=sql,
     ))
     return state
@@ -122,7 +123,7 @@ def node_collaborators(node_input: RunState) -> RunState:
     state.package = [Collaborator(**r) for r in rows]
     state.package_lead = lead.name
     state.trace.append(TraceStep(
-        step="collaborators", detail=f"ClickHouse Q2: self-join on shared titles for {lead.name}",
+        step="collaborators", detail=f"Official mcp-clickhouse Q2: self-join on shared titles for {lead.name}",
         ms=int(ms), rows=len(rows), sql=sql,
     ))
     return state
