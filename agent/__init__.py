@@ -1,1 +1,1 @@
-"""Below the Line -- crew discovery agent over IMDb public datasets."""
+"""Reel Crew -- crew discovery agent over IMDb public datasets."""

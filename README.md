@@ -1,4 +1,4 @@
-# Below the Line
+# Reel Crew
 
 **Crew discovery for film production.** A producer describes the crew they need in plain
 English; the agent finds real people whose actual credit history matches, ranks them on
@@ -87,6 +87,19 @@ reconstructed from credits alone.
 
 **Q3 — profile assembly.** Career span, genre distribution, rating trajectory and top
 collaborators. The statistics are SQL; only the prose is Gemini.
+
+## Using it
+
+- **Brief** — type what you need in plain English and hit Find crew.
+- **Filters** — the parsed query becomes live controls (role, genres, rating, year, credit and
+  vote floors). Adjusting them replaces the parse step and re-runs the same graph, so a wrong
+  parse is correctable instead of fatal.
+- **Sort** — reorder by match, rating, reach or recency without re-querying.
+- **Shortlist** — pin people across several searches, then export CSV. Each row keeps the role
+  and genres from the search that found it, so a mixed shortlist stays correctly labelled.
+- **Follow the graph** — select anyone in the department panel or a profile to open their own
+  profile and keep walking the collaboration network.
+- **Verify** — every row links to the person's IMDb page. The titles check out.
 
 ## Run it
 

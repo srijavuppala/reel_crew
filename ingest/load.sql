@@ -1,4 +1,4 @@
--- Below the Line -- ClickHouse ingestion.
+-- Reel Crew -- ClickHouse ingestion.
 -- IMDb publishes gzipped TSVs daily; ClickHouse reads them straight from the URL,
 -- so there is no ETL script. Run each statement separately: the HTTP interface
 -- rejects multi-statement bodies.
@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS crew_credits (
 ) ENGINE = MergeTree ORDER BY (category, nconst, year);
 
 -- Filters applied at build time: released formats only, titles with enough votes
--- to be rankable, and below-the-line crew plus the director/writer/producer
+-- to be rankable, and reel-crew crew plus the director/writer/producer
 -- anchors that make the collaboration graph meaningful.
 -- 101,655,603 raw credits -> 1,295,494 rankable crew credits in ~6s.
 INSERT INTO crew_credits

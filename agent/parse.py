@@ -10,7 +10,7 @@ import datetime
 import json
 import re
 
-from .config import GEMINI_ENABLED, GEMINI_MODEL, get_genai_client
+from .config import GEMINI_ENABLED, gemini_generate
 from .schema import ROLES, CrewQuery
 
 IMDB_GENRES = [
@@ -68,8 +68,27 @@ Valid genres (exact casing): {', '.join(IMDB_GENRES)}
 Map industry slang: "DP"/"director of photography" -> cinematographer; "cutter" -> editor;
 "score"/"music" -> composer; "UPM"/"line producer" -> producer.
 Resolve relative time ("last 8 years") against the current year {datetime.date.today().year}.
+min_rating is an IMDb score floor (0-10) and min_votes is a per-title vote floor that keeps
+amateur and fan output from outranking real features. Leave min_rating at 6.0 and min_votes at
+1000 unless the brief explicitly asks for a different bar or for obscure/low-profile work.
 Return ONLY a JSON object with keys: role, genres, min_rating, year_from, min_credits, min_votes, keywords.
 """
+
+
+def _apply_floors(q: CrewQuery, brief: str) -> CrewQuery:
+    """Restore sensible floors the model tends to zero out.
+
+    Gemini reliably returns min_votes=0 and min_rating=0.0 when the brief does not
+    mention them, which lets fan films and unrated titles outrank real features.
+    An explicit ask for obscure work is honoured.
+    """
+    wants_obscure = any(w in brief.lower() for w in
+                        ("obscure", "unknown", "undiscovered", "low-profile", "emerging", "up-and-coming"))
+    if q.min_votes <= 0:
+        q.min_votes = 0 if wants_obscure else 1000
+    if q.min_rating <= 0:
+        q.min_rating = 6.0
+    return q
 
 
 def _rule_based(brief: str) -> CrewQuery:
@@ -131,22 +150,13 @@ def _rule_based(brief: str) -> CrewQuery:
 def _gemini(brief: str) -> CrewQuery | None:
     """Gemini structured output. Returns None so the caller can fall back."""
     try:
-        from google.genai import types
-
-        client = get_genai_client()
-        resp = client.models.generate_content(
-            model=GEMINI_MODEL,
+        text = gemini_generate(
+            system_instruction=PARSE_INSTRUCTION,
             contents=brief,
-            config=types.GenerateContentConfig(
-                system_instruction=PARSE_INSTRUCTION,
-                response_mime_type="application/json",
-                response_schema=CrewQuery,
-                temperature=0.0,
-            ),
+            response_schema=CrewQuery,
+            temperature=0.0,
         )
-        if getattr(resp, "parsed", None):
-            return CrewQuery.model_validate(resp.parsed)
-        return CrewQuery.model_validate(json.loads(resp.text))
+        return _apply_floors(CrewQuery.model_validate(json.loads(text)), brief)
     except Exception as exc:  # noqa: BLE001 - never let the demo die on the LLM
         print(f"[parse] Gemini unavailable, using rule-based parser: {exc}")
         return None

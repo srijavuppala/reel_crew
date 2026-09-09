@@ -19,6 +19,14 @@
 - [x] Executed SQL and row counts shown in the UI (the anti-wrapper signal)
 - [x] Multi-step trace with per-step timings
 
+## Phase 1.5 — Product depth  ✅ complete
+- [x] Renamed to **Reel Crew**
+- [x] Editable filter controls that replace the parse step and re-run the same ADK graph
+- [x] Sortable evidence columns + "show more"
+- [x] Shortlist with CSV export; role/genres stamped per candidate at pin time
+- [x] Clickable collaborators — walk the graph from any person to any other
+- [x] IMDb verification link on every candidate
+
 ## Phase 2 — Design and impact  ◑ in progress
 - [x] Empty and error states written as product copy, not stack traces
 - [x] Keyboard access, focus states, reduced-motion, mobile breakpoint
@@ -26,9 +34,10 @@
 - [ ] **Deploy to Cloud Run and capture the hosted URL** — needs `gcloud` (not installed) + a GCP project
 - [x] Gemini Enterprise Agent Platform (Vertex AI) integrated — express-key and ADC paths,
       auto-detected from the key prefix, backend reported in `/api/health`
-- [ ] **Enable billing on GCP project 892295257755** — the key authenticates fine, the API
-      returns `BILLING_DISABLED`. This is the only thing gating live Gemini.
-- [ ] Comparison beat recorded: plain Gemini vs the agent (`scripts/compare.py` ready)
+- [x] **Gemini live** — AI Studio key working; parse and narrate both run on gemini-2.5-flash
+- [x] Backend fallback: the key prefix does not identify the backend, so calls try the other
+      endpoint once on PERMISSION_DENIED
+- [ ] Comparison beat recorded: plain Gemini vs the agent (`scripts/compare.py` now runnable)
 
 ## Phase 3 — Submission
 - [ ] 3-minute demo video (screen recording, functioning product)
@@ -39,9 +48,7 @@
 - [ ] Submit with buffer — not at 4:55pm
 
 ## Blocked on you
-1. **Billing on GCP project 892295257755.** The Agent Platform key is in `.env` and is valid;
-   `aiplatform.googleapis.com` rejects calls with `BILLING_DISABLED` until billing is linked.
-   Until then the agent runs on its deterministic fallback and the UI says `parse: rule-based`.
+1. **Rotate the API key before this goes anywhere public** — it was shared in a chat transcript.
 2. **GCP project + `gcloud`** — required for the Cloud Run deploy and the hosted URL the
    submission asks for.
 3. **Push target** — repo is committed locally on `main`; tell me the GitHub remote and

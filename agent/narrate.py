@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 
-from .config import GEMINI_ENABLED, GEMINI_MODEL, get_genai_client
+from .config import GEMINI_ENABLED, gemini_generate
 from .schema import Candidate, CrewQuery
 
 NARRATE_INSTRUCTION = """You are a crew-staffing analyst briefing a line producer.
@@ -50,8 +50,6 @@ def narrate(q: CrewQuery, cands: list[Candidate]) -> tuple[str, dict[str, str], 
     """Return (narration, rationales_by_nconst, engine_used)."""
     if GEMINI_ENABLED and cands:
         try:
-            from google.genai import types
-
             payload = {
                 "spec": q.model_dump(),
                 "candidates": [
@@ -62,17 +60,12 @@ def narrate(q: CrewQuery, cands: list[Candidate]) -> tuple[str, dict[str, str], 
                     for c in cands
                 ],
             }
-            client = get_genai_client()
-            resp = client.models.generate_content(
-                model=GEMINI_MODEL,
+            text = gemini_generate(
+                system_instruction=NARRATE_INSTRUCTION,
                 contents=json.dumps(payload),
-                config=types.GenerateContentConfig(
-                    system_instruction=NARRATE_INSTRUCTION,
-                    response_mime_type="application/json",
-                    temperature=0.2,
-                ),
+                temperature=0.2,
             )
-            data = json.loads(resp.text)
+            data = json.loads(text)
             valid = {c.nconst for c in cands}
             rats = {k: v for k, v in (data.get("rationales") or {}).items() if k in valid}
             return data.get("narration", ""), rats, "gemini"

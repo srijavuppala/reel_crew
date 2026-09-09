@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Below the Line — crew discovery</title>
+<title>Reel Crew — crew discovery</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@400;500;600;700&family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -16,7 +16,7 @@
   --rule:#A8B6C0;
   --rule-faint:#C9D4DB;
   --goldenrod:#C8901F;    /* revision goldenrod: evidence only */
-  --pink:#B4526A;         /* pink pages: caveats, empty, seeded */
+  --pink:#B4526A;         /* pink pages: caveats, empty states */
   --focus:#1F5F8B;
   --mono:"Courier Prime",ui-monospace,"Courier New",monospace;
   --sans:"Barlow Semi Condensed","Helvetica Neue",Arial,sans-serif;
@@ -35,55 +35,76 @@ body{
   font-family:var(--sans);font-size:16px;line-height:1.45;
   font-variant-numeric:tabular-nums;
 }
-.wrap{max-width:1140px;margin:0 auto;padding:0 20px 96px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 120px}
+:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 
 /* ---------- masthead: a camera-report header, not a hero ---------- */
 .slate{
-  border-bottom:2px solid var(--ink);padding:22px 0 12px;margin-bottom:26px;
+  border-bottom:2px solid var(--ink);padding:22px 0 12px;margin-bottom:22px;
   display:flex;flex-wrap:wrap;gap:22px;align-items:flex-end;justify-content:space-between;
 }
-.slate h1{
-  font-family:var(--sans);font-weight:700;font-size:clamp(30px,5.4vw,46px);
-  letter-spacing:-.015em;margin:0;line-height:.98;
-}
+.slate h1{font-weight:700;font-size:clamp(30px,5.4vw,46px);letter-spacing:-.015em;margin:0;line-height:.98}
 .slate .sub{font-family:var(--mono);font-size:13px;color:var(--ink-soft);margin-top:7px;max-width:56ch}
 .counts{display:flex;gap:26px;font-family:var(--mono);font-size:12px;color:var(--ink-soft);text-align:right}
 .counts b{display:block;font-family:var(--sans);font-weight:600;font-size:21px;color:var(--ink);line-height:1.1}
 
-/* ---------- the brief: written like a production request ---------- */
+/* ---------- the brief ---------- */
 .brief-block{background:var(--paper);border:1px solid var(--rule);padding:18px}
-label.brief-label{display:block;font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-bottom:8px}
+.lbl{display:block;font-family:var(--mono);font-size:12px;color:var(--ink-soft);margin-bottom:8px}
 textarea{
-  width:100%;min-height:84px;resize:vertical;background:transparent;color:var(--ink);
+  width:100%;min-height:76px;resize:vertical;background:transparent;color:var(--ink);
   border:0;border-bottom:1px solid var(--rule);padding:6px 2px 10px;
   font-family:var(--mono);font-size:16.5px;line-height:1.5;
 }
 textarea:focus{outline:none;border-bottom-color:var(--focus);box-shadow:0 1px 0 var(--focus)}
 .row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:14px}
 button.go{
-  font-family:var(--sans);font-weight:600;font-size:15px;letter-spacing:.01em;
-  background:var(--ink);color:var(--paper);border:0;border-radius:2px;
-  padding:10px 22px;cursor:pointer;
+  font-family:var(--sans);font-weight:600;font-size:15px;background:var(--ink);color:var(--paper);
+  border:0;border-radius:2px;padding:10px 22px;cursor:pointer;
 }
 button.go:hover{background:var(--focus)}
 button.go:disabled{opacity:.5;cursor:progress}
+button.ghost{
+  font-family:var(--sans);font-weight:600;font-size:13.5px;background:transparent;color:var(--ink);
+  border:1px solid var(--rule);border-radius:2px;padding:7px 14px;cursor:pointer;
+}
+button.ghost:hover{border-color:var(--focus);color:var(--focus)}
 .examples{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
 .chip{
-  font-family:var(--mono);font-size:12px;color:var(--ink-soft);cursor:pointer;
-  background:transparent;border:1px dashed var(--rule);border-radius:2px;padding:5px 9px;
+  font-family:var(--mono);font-size:12px;color:var(--ink-soft);cursor:pointer;background:transparent;
+  border:1px dashed var(--rule);border-radius:2px;padding:5px 9px;
 }
 .chip:hover{border-style:solid;border-color:var(--focus);color:var(--ink)}
-:focus-visible{outline:2px solid var(--focus);outline-offset:2px}
 
-/* ---------- parse + trace: the camera report footer ---------- */
-.report{margin-top:22px;border:1px solid var(--rule);background:var(--paper)}
+/* ---------- filters ---------- */
+.filters{margin-top:18px;border:1px solid var(--rule);background:var(--paper)}
+.filters > summary{padding:10px 14px;font-family:var(--mono);font-size:12px;color:var(--ink-soft);cursor:pointer}
+.filters[open] > summary{border-bottom:1px solid var(--rule-faint);color:var(--ink)}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:16px;padding:16px 14px}
+.f label{display:block;font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin-bottom:5px}
+.f select,.f input[type=number]{
+  width:100%;font-family:var(--mono);font-size:13.5px;color:var(--ink);background:var(--stock);
+  border:1px solid var(--rule);border-radius:2px;padding:7px 8px;
+}
+.f output{font-family:var(--sans);font-weight:600;font-size:15px}
+input[type=range]{width:100%;accent-color:var(--goldenrod)}
+.gpick{display:flex;flex-wrap:wrap;gap:5px;padding:0 14px 14px}
+.gpick button{
+  font-family:var(--mono);font-size:11.5px;background:transparent;color:var(--ink-soft);
+  border:1px solid var(--rule-faint);border-radius:2px;padding:4px 8px;cursor:pointer;
+}
+.gpick button[aria-pressed="true"]{background:var(--goldenrod);border-color:var(--goldenrod);color:#1C2126;font-weight:700}
+.fbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:0 14px 14px}
+
+/* ---------- trace / report ---------- */
+.report{margin-top:20px;border:1px solid var(--rule);background:var(--paper)}
 .report-head{
   display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center;
   padding:9px 14px;border-bottom:1px solid var(--rule-faint);
   font-family:var(--mono);font-size:12px;color:var(--ink-soft);
 }
 .pill{border:1px solid var(--rule);border-radius:2px;padding:2px 7px;white-space:nowrap}
-.steps{display:flex;flex-wrap:wrap;gap:0;font-family:var(--mono);font-size:12px}
+.steps{display:flex;flex-wrap:wrap;font-family:var(--mono);font-size:12px}
 .step{padding:9px 14px;border-right:1px solid var(--rule-faint);flex:1 1 170px;min-width:0}
 .step:last-child{border-right:0}
 .step .k{color:var(--ink-soft)}
@@ -95,14 +116,11 @@ pre.sql{
   font-family:var(--mono);font-size:12.5px;line-height:1.5;white-space:pre;overflow-x:auto;
   background:var(--stock);border:1px solid var(--rule-faint);padding:12px;margin:10px 0 4px;
 }
-.narration{
-  font-family:var(--mono);font-size:14.5px;line-height:1.62;padding:14px;
-  border-top:1px solid var(--rule-faint);max-width:78ch;
-}
+.narration{font-family:var(--mono);font-size:14.5px;line-height:1.62;padding:14px;border-top:1px solid var(--rule-faint);max-width:78ch}
 
-/* ---------- the crew list: ruled rows, evidence right-aligned ---------- */
+/* ---------- crew list ---------- */
 .listhead{
-  display:flex;align-items:baseline;justify-content:space-between;gap:14px;
+  display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:14px;
   margin:30px 0 0;padding-bottom:7px;border-bottom:2px solid var(--ink);
 }
 .listhead h2{font-size:21px;font-weight:700;margin:0;letter-spacing:-.01em}
@@ -114,41 +132,66 @@ thead th{
   padding:8px 10px;border-bottom:1px solid var(--rule);white-space:nowrap;
 }
 thead th.l{text-align:left}
+thead th.sortable{cursor:pointer;user-select:none}
+thead th.sortable:hover{color:var(--ink)}
+thead th[data-active="true"]{color:var(--ink);font-weight:700}
 tbody tr{border-bottom:1px solid var(--rule-faint);cursor:pointer}
 tbody tr:hover{background:var(--paper)}
-tbody tr[aria-selected="true"]{background:var(--paper);box-shadow:inset 3px 0 0 var(--goldenrod)}
+tbody tr[data-pinned="true"]{background:var(--paper);box-shadow:inset 3px 0 0 var(--goldenrod)}
 td{padding:12px 10px;vertical-align:top;text-align:right}
 td.l{text-align:left}
-.rank{font-family:var(--mono);font-size:13px;color:var(--ink-soft);width:34px}
+.rank{font-family:var(--mono);font-size:13px;color:var(--ink-soft);width:30px}
 .nm{font-weight:600;font-size:18px;line-height:1.15}
-.titles{font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);margin-top:3px;max-width:46ch}
+.titles{font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);margin-top:3px;max-width:48ch}
 .why{font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);margin-top:6px;max-width:70ch;line-height:1.5}
 .num{font-weight:600;font-size:17px}
 .unit{font-family:var(--mono);font-size:11px;color:var(--ink-soft);display:block}
+.imdb{font-family:var(--mono);font-size:11.5px;color:var(--focus);text-decoration:none;border-bottom:1px solid transparent}
+.imdb:hover{border-bottom-color:var(--focus)}
+.pin{
+  background:transparent;border:1px solid var(--rule);border-radius:2px;cursor:pointer;
+  font-family:var(--mono);font-size:11px;color:var(--ink-soft);padding:4px 7px;white-space:nowrap;
+}
+.pin[aria-pressed="true"]{background:var(--goldenrod);border-color:var(--goldenrod);color:#1C2126;font-weight:700}
+.more{display:flex;justify-content:center;padding:18px 0}
 
 /* the one bold element: evidence bars */
 .ev{display:flex;align-items:center;gap:8px;justify-content:flex-end}
 .bar{height:9px;background:var(--goldenrod);min-width:3px;border-radius:1px}
 .bar-track{width:62px;display:flex;justify-content:flex-end;background:var(--rule-faint);height:9px;border-radius:1px}
 
-/* ---------- department panel ---------- */
+/* ---------- department ---------- */
 .dept{margin-top:34px;border:1px solid var(--rule);background:var(--paper)}
 .dept h3{margin:0;padding:12px 14px;border-bottom:1px solid var(--rule-faint);font-size:17px}
 .dept h3 span{font-family:var(--mono);font-size:12px;color:var(--ink-soft);font-weight:400}
-.member{display:flex;justify-content:space-between;gap:14px;padding:11px 14px;border-bottom:1px solid var(--rule-faint)}
+.member{
+  display:flex;justify-content:space-between;gap:14px;padding:11px 14px;
+  border-bottom:1px solid var(--rule-faint);width:100%;text-align:left;
+  background:transparent;border-left:0;border-right:0;border-top:0;cursor:pointer;font:inherit;color:inherit;
+}
 .member:last-child{border-bottom:0}
+.member:hover{background:var(--stock)}
 .member .role{font-family:var(--mono);font-size:12px;color:var(--ink-soft)}
-.member .shared{font-family:var(--mono);font-size:12px;color:var(--ink-soft);max-width:42ch;text-align:right}
+.member .shared{font-family:var(--mono);font-size:12px;color:var(--ink-soft);max-width:40ch;text-align:right}
 .together{font-weight:700;font-size:16px;white-space:nowrap}
+
+/* ---------- shortlist dock ---------- */
+.dock{
+  position:fixed;left:0;right:0;bottom:0;background:var(--paper);border-top:2px solid var(--ink);
+  padding:11px 20px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;z-index:15;
+}
+.dock[hidden]{display:none}
+.dock .names{font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);flex:1 1 320px;min-width:0}
+.dock b{font-family:var(--sans);font-size:17px;color:var(--ink)}
 
 /* ---------- profile drawer ---------- */
 .drawer{
-  position:fixed;inset:0 0 0 auto;width:min(560px,100%);background:var(--paper);
-  border-left:2px solid var(--ink);overflow-y:auto;padding:22px;z-index:20;
+  position:fixed;inset:0 0 0 auto;width:min(580px,100%);background:var(--paper);
+  border-left:2px solid var(--ink);overflow-y:auto;padding:22px;z-index:25;
   transform:translateX(100%);transition:transform .22s ease;
 }
 .drawer[data-open="true"]{transform:none}
-.scrim{position:fixed;inset:0;background:rgba(12,16,20,.42);z-index:19;opacity:0;pointer-events:none;transition:opacity .22s}
+.scrim{position:fixed;inset:0;background:rgba(12,16,20,.42);z-index:24;opacity:0;pointer-events:none;transition:opacity .22s}
 .scrim[data-open="true"]{opacity:1;pointer-events:auto}
 .drawer .x{position:absolute;top:14px;right:16px;background:none;border:0;font-size:26px;cursor:pointer;color:var(--ink-soft);line-height:1}
 .kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:12px;margin:16px 0 20px}
@@ -159,19 +202,17 @@ td.l{text-align:left}
 .mix .gb{height:8px;background:var(--goldenrod);border-radius:1px;min-width:2px}
 .spark{display:flex;align-items:flex-end;gap:2px;height:52px;margin-bottom:6px}
 .spark i{flex:1;background:var(--rule);min-height:2px;border-radius:1px 1px 0 0}
-h4{font-size:12px;font-family:var(--mono);font-weight:400;color:var(--ink-soft);
-   text-transform:uppercase;letter-spacing:.06em;margin:20px 0 8px}
+h4{font-size:12px;font-family:var(--mono);font-weight:400;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.06em;margin:20px 0 8px}
 
 /* ---------- states ---------- */
-.msg{margin-top:24px;border:1px solid var(--rule);background:var(--paper);padding:16px;font-family:var(--mono);font-size:13.5px;line-height:1.6;max-width:72ch}
+.msg{margin-top:24px;border:1px solid var(--rule);background:var(--paper);padding:16px;font-family:var(--mono);font-size:13.5px;line-height:1.6;max-width:74ch}
 .msg.bad{border-left:3px solid var(--pink)}
 .msg b{font-family:var(--sans);font-size:16px;display:block;margin-bottom:5px}
 footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--rule);font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);line-height:1.7}
-.hidden{display:none}
-@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-@media (max-width:720px){
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:760px){
   thead th.hide-s,td.hide-s{display:none}
-  .counts{text-align:left}
+  .counts{text-align:left;gap:18px}
   .drawer{border-left:0;border-top:2px solid var(--ink)}
 }
 </style>
@@ -181,7 +222,7 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--rule);font-fa
 
   <header class="slate">
     <div>
-      <h1>Below the Line</h1>
+      <h1>Reel Crew</h1>
       <p class="sub">Describe the crew you need. Every name below comes out of a SQL result set over real IMDb credits — never out of a language model's memory.</p>
     </div>
     <div class="counts" id="counts">
@@ -193,14 +234,47 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--rule);font-fa
   </header>
 
   <section class="brief-block">
-    <label class="brief-label" for="brief">Production brief</label>
+    <label class="lbl" for="brief">Production brief</label>
     <textarea id="brief" spellcheck="false">I need a DP who has shot three or more horror features rated above 6.5 in the last eight years</textarea>
     <div class="row">
       <button class="go" id="go">Find crew</button>
-      <span class="brief-label" style="margin:0" id="status"></span>
+      <span class="lbl" style="margin:0" id="status"></span>
     </div>
     <div class="examples" id="examples"></div>
   </section>
+
+  <details class="filters" id="filters" hidden>
+    <summary>Adjust the search by hand — role, genres and thresholds</summary>
+    <div class="fgrid">
+      <div class="f">
+        <label for="f-role">Role</label>
+        <select id="f-role"></select>
+      </div>
+      <div class="f">
+        <label for="f-rating">Minimum IMDb rating <output id="o-rating"></output></label>
+        <input type="range" id="f-rating" min="0" max="9" step="0.1">
+      </div>
+      <div class="f">
+        <label for="f-year">Active since</label>
+        <input type="number" id="f-year" min="1900" max="2030" step="1">
+      </div>
+      <div class="f">
+        <label for="f-credits">Minimum matching credits</label>
+        <input type="number" id="f-credits" min="1" max="40" step="1">
+      </div>
+      <div class="f">
+        <label for="f-votes">Per-title vote floor</label>
+        <input type="number" id="f-votes" min="0" max="200000" step="500">
+      </div>
+    </div>
+    <span class="lbl" style="padding:0 14px">Genres — any selected counts as a match</span>
+    <div class="gpick" id="f-genres"></div>
+    <div class="fbar">
+      <button class="go" id="apply">Apply filters</button>
+      <button class="ghost" id="reset">Reset to the brief</button>
+      <span class="lbl" style="margin:0">Filters run the same graph; the parse step is replaced by your values.</span>
+    </div>
+  </details>
 
   <div id="out"></div>
 
@@ -208,6 +282,14 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--rule);font-fa
     Credit data: IMDb public datasets (datasets.imdbws.com), used under their personal and non-commercial licence. Refreshed daily.<br>
     Ranking, collaboration graph and every evidence column are computed in ClickHouse over real credits. Availability, rates and location are not modelled — no public source exists.
   </footer>
+</div>
+
+<div class="dock" id="dock" hidden>
+  <div class="names"><b id="dock-n">0</b> on the shortlist — <span id="dock-names"></span></div>
+  <div class="row" style="margin:0">
+    <button class="go" id="export">Export CSV</button>
+    <button class="ghost" id="clear">Clear</button>
+  </div>
 </div>
 
 <div class="scrim" id="scrim"></div>
@@ -221,71 +303,125 @@ const $ = s => document.querySelector(s);
 const fmt = n => (n ?? 0).toLocaleString();
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+const ROLES = ["cinematographer","editor","composer","production_designer","casting_director","director","writer","producer"];
+const GENRES = ["Action","Adventure","Animation","Biography","Comedy","Crime","Documentary","Drama","Family","Fantasy","Film-Noir","History","Horror","Music","Musical","Mystery","Romance","Sci-Fi","Sport","Thriller","War","Western"];
 const EXAMPLES = [
   "I need a DP who has shot three or more horror features rated above 6.5 in the last eight years",
   "Looking for an editor with at least 5 credits on crime dramas since 2010",
   "Composer for a sci-fi thriller, rated over 7.0",
   "Production designer for a period piece, 2+ credits",
-  "Casting director for comedies since 2018"
+  "Find me an emerging DP doing obscure horror work"
 ];
 
+let LAST = null;                       // last SearchResult
+let LIMIT = 12;                        // rows requested
+let SORT = { key: null, dir: -1 };     // null = keep ClickHouse ranking
+const PINNED = new Map();              // nconst -> candidate
+
+/* ---------------------------------------------------------------- setup */
 $('#examples').innerHTML = EXAMPLES.map((e,i) =>
-  `<button class="chip" data-i="${i}">${esc(e.length > 54 ? e.slice(0,54)+'…' : e)}</button>`).join('');
+  `<button class="chip" data-i="${i}">${esc(e.length > 52 ? e.slice(0,52)+'…' : e)}</button>`).join('');
 $('#examples').addEventListener('click', e => {
   const b = e.target.closest('.chip'); if (!b) return;
   $('#brief').value = EXAMPLES[+b.dataset.i];
+  LIMIT = 12; SORT = { key:null, dir:-1 };
   search();
 });
+
+$('#f-role').innerHTML = ROLES.map(r => `<option value="${r}">${r.replace(/_/g,' ')}</option>`).join('');
+$('#f-genres').innerHTML = GENRES.map(g => `<button type="button" data-g="${g}" aria-pressed="false">${g}</button>`).join('');
+$('#f-genres').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+});
+$('#f-rating').addEventListener('input', e => { $('#o-rating').textContent = (+e.target.value).toFixed(1); });
 
 fetch('/api/stats').then(r => r.json()).then(s => {
   $('#c-credits').textContent = fmt(s.crew_credits);
   $('#c-people').textContent  = fmt(s.people);
   $('#c-titles').textContent  = fmt(s.titles);
   $('#c-raw').textContent     = fmt(s.raw_principals);
-}).catch(() => { $('#counts').style.display = 'none'; });
+}).catch(() => { $('#counts').hidden = true; });
 
-let LAST = null;
+/* ---------------------------------------------------------------- search */
+function readFilters(){
+  return {
+    role: $('#f-role').value,
+    genres: [...$('#f-genres').querySelectorAll('[aria-pressed="true"]')].map(b => b.dataset.g),
+    min_rating: +$('#f-rating').value,
+    year_from: +$('#f-year').value,
+    min_credits: +$('#f-credits').value,
+    min_votes: +$('#f-votes').value,
+    keywords: []
+  };
+}
+function writeFilters(q){
+  $('#f-role').value = q.role;
+  $('#f-rating').value = q.min_rating; $('#o-rating').textContent = (+q.min_rating).toFixed(1);
+  $('#f-year').value = q.year_from;
+  $('#f-credits').value = q.min_credits;
+  $('#f-votes').value = q.min_votes;
+  $('#f-genres').querySelectorAll('button').forEach(b =>
+    b.setAttribute('aria-pressed', String(q.genres.includes(b.dataset.g))));
+}
 
-async function search(){
+async function search(override){
   const brief = $('#brief').value.trim();
   if (brief.length < 3) return;
-  $('#go').disabled = true;
-  $('#status').textContent = 'Parsing brief, then querying ClickHouse…';
+  $('#go').disabled = $('#apply').disabled = true;
+  $('#status').textContent = override ? 'Re-running with your filters…' : 'Parsing brief, then querying ClickHouse…';
   const t0 = performance.now();
   try {
     const res = await fetch('/api/search', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ brief, limit: 12 })
+      body: JSON.stringify({ brief, limit: LIMIT, query: override || null })
     });
     if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
     LAST = await res.json();
-    render(LAST, Math.round(performance.now() - t0));
-    $('#status').textContent = '';
+    if (!override) writeFilters(LAST.query);
+    $('#filters').hidden = false;
+    render(Math.round(performance.now() - t0));
   } catch (err) {
     $('#out').innerHTML = `<div class="msg bad"><b>The search did not run.</b>${esc(err.message)}
       <br><br>Check that the API can reach ClickHouse: <code>curl localhost:8000/api/health</code></div>`;
-    $('#status').textContent = '';
   } finally {
-    $('#go').disabled = false;
+    $('#go').disabled = $('#apply').disabled = false;
+    $('#status').textContent = '';
   }
 }
-$('#go').addEventListener('click', search);
+$('#go').addEventListener('click', () => { LIMIT = 12; SORT = {key:null,dir:-1}; search(); });
+$('#apply').addEventListener('click', () => { LIMIT = 12; search(readFilters()); });
+$('#reset').addEventListener('click', () => { LIMIT = 12; SORT = {key:null,dir:-1}; search(); });
 $('#brief').addEventListener('keydown', e => {
-  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') search();
+  if ((e.metaKey || e.ctrlKey) && e.key === 'Enter'){ LIMIT = 12; search(); }
 });
 
-function render(d, wall){
-  const q = d.query, cands = d.candidates || [];
+/* ---------------------------------------------------------------- render */
+const COLS = [
+  { key:'genre_credits', label:'Match',  unit:'matching credits' },
+  { key:'avg_rating',    label:'Rating', unit:'avg rating' },
+  { key:'reach',         label:'Reach',  unit:'votes reached', small:true },
+  { key:'most_recent',   label:'Recent', unit:'most recent',   small:true },
+];
+
+function sorted(cands){
+  if (!SORT.key) return cands;
+  return [...cands].sort((a,b) => (a[SORT.key] > b[SORT.key] ? 1 : a[SORT.key] < b[SORT.key] ? -1 : 0) * SORT.dir);
+}
+
+function render(wall){
+  const d = LAST, q = d.query;
+  const cands = sorted(d.candidates || []);
   const sqlSteps = (d.trace || []).filter(t => t.sql);
 
   const head = `
    <div class="report">
      <div class="report-head">
        <span>Parsed brief →
-         role <b>${esc(q.role.replace('_',' '))}</b> ·
+         role <b>${esc(q.role.replace(/_/g,' '))}</b> ·
          ${q.genres.length ? 'genres <b>'+esc(q.genres.join(', '))+'</b> · ' : ''}
          rating ≥ <b>${q.min_rating}</b> · since <b>${q.year_from}</b> ·
-         ≥ <b>${q.min_credits}</b> matching credit(s)</span>
+         ≥ <b>${q.min_credits}</b> matching credit(s) · votes ≥ <b>${fmt(q.min_votes)}</b></span>
        <span>
          <span class="pill">parse: ${esc(d.engine.parser || '—')}</span>
          <span class="pill">rank: ClickHouse SQL</span>
@@ -306,25 +442,28 @@ function render(d, wall){
 
   if (!cands.length){
     $('#out').innerHTML = head + `<div class="msg bad"><b>No crew matched that brief.</b>
-      Nothing in the credit data clears all of those thresholds at once. Lower the rating floor,
-      widen the year range, or ask for fewer matching credits.</div>`;
+      Nothing in the credit data clears all of those thresholds at once. Open the filters above and
+      lower the rating, widen the year range, or ask for fewer matching credits.</div>`;
     return;
   }
 
   const maxEv = Math.max(...cands.map(c => c.genre_credits), 1);
   const rows = cands.map((c,i) => `
-    <tr data-nconst="${esc(c.nconst)}" tabindex="0" aria-selected="${i===0}">
+    <tr data-nconst="${esc(c.nconst)}" data-pinned="${PINNED.has(c.nconst)}" tabindex="0">
       <td class="l rank">${i+1}</td>
       <td class="l">
         <div class="nm">${esc(c.name)}</div>
         <div class="titles">${esc(c.sample_titles.join(' · '))}</div>
         ${c.rationale ? `<div class="why">${esc(c.rationale)}</div>` : ''}
+        <div class="row" style="margin-top:8px;gap:8px">
+          <button class="pin" data-pin="${esc(c.nconst)}" aria-pressed="${PINNED.has(c.nconst)}">
+            ${PINNED.has(c.nconst) ? '✓ on shortlist' : '+ shortlist'}</button>
+          <a class="imdb" href="https://www.imdb.com/name/${esc(c.nconst)}/" target="_blank" rel="noopener noreferrer">verify on IMDb ↗</a>
+        </div>
       </td>
       <td>
-        <div class="ev">
-          <span class="num">${c.genre_credits}</span>
-          <span class="bar-track"><span class="bar" style="width:${Math.max(4,(c.genre_credits/maxEv)*62)}px"></span></span>
-        </div>
+        <div class="ev"><span class="num">${c.genre_credits}</span>
+          <span class="bar-track"><span class="bar" style="width:${Math.max(4,(c.genre_credits/maxEv)*62)}px"></span></span></div>
         <span class="unit">matching credits</span>
       </td>
       <td><span class="num">${c.avg_rating}</span><span class="unit">avg rating</span></td>
@@ -335,34 +474,103 @@ function render(d, wall){
   const dept = (d.package || []).length ? `
     <div class="dept">
       <h3>The unit around ${esc(d.package_lead)} <span>— people who keep turning up on the same titles</span></h3>
-      ${d.package.map(p => `<div class="member">
-        <div><div class="nm" style="font-size:16px">${esc(p.name)}</div>
-             <div class="role">${esc(p.roles.join(' / ').replace(/_/g,' '))}</div></div>
-        <div style="text-align:right">
-          <div class="together">${p.films_together} together</div>
-          <div class="shared">${esc(p.shared_titles.slice(0,3).join(' · '))}</div></div>
-      </div>`).join('')}
+      ${d.package.map(p => `<button class="member" data-nconst="${esc(p.nconst)}">
+        <span><span class="nm" style="font-size:16px;display:block">${esc(p.name)}</span>
+              <span class="role">${esc(p.roles.join(' / ').replace(/_/g,' '))}</span></span>
+        <span style="text-align:right">
+          <span class="together" style="display:block">${p.films_together} together</span>
+          <span class="shared">${esc(p.shared_titles.slice(0,3).join(' · '))}</span></span>
+      </button>`).join('')}
     </div>` : '';
 
   $('#out').innerHTML = head + `
     <div class="listhead">
-      <h2>${cands.length} ${esc(q.role.replace('_',' '))}${cands.length===1?'':'s'} ranked on evidence</h2>
-      <span class="note">Select a row for the full profile</span>
+      <h2>${cands.length} ${esc(q.role.replace(/_/g,' '))}${cands.length===1?'':'s'} ranked on evidence</h2>
+      <span class="note">${SORT.key ? 'Sorted by '+SORT.key.replace(/_/g,' ') : 'Ranked by ClickHouse'} · select a row for the full profile</span>
     </div>
     <table><thead><tr>
       <th class="l">#</th><th class="l">Name and matching credits</th>
-      <th>Match</th><th>Rating</th><th class="hide-s">Reach</th><th class="hide-s">Recent</th>
-    </tr></thead><tbody>${rows}</tbody></table>` + dept;
+      ${COLS.map(c => `<th class="sortable${c.small?' hide-s':''}" data-sort="${c.key}"
+         data-active="${SORT.key===c.key}">${c.label}${SORT.key===c.key ? (SORT.dir<0?' ↓':' ↑') : ''}</th>`).join('')}
+    </tr></thead><tbody>${rows}</tbody></table>
+    ${d.candidates.length >= LIMIT ? `<div class="more"><button class="ghost" id="more">Show more crew</button></div>` : ''}
+    ` + dept;
 
+  wireResults();
+  renderDock();
+}
+
+function wireResults(){
+  $('#out').querySelectorAll('thead th.sortable').forEach(th => {
+    th.addEventListener('click', () => {
+      const k = th.dataset.sort;
+      SORT = (SORT.key === k) ? { key:k, dir:-SORT.dir } : { key:k, dir:-1 };
+      render(0);
+    });
+  });
   $('#out').querySelectorAll('tbody tr').forEach(tr => {
     const open = () => openProfile(tr.dataset.nconst);
-    tr.addEventListener('click', open);
-    tr.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(); }});
+    tr.addEventListener('click', e => { if (!e.target.closest('.pin,.imdb')) open(); });
+    tr.addEventListener('keydown', e => {
+      if ((e.key === 'Enter' || e.key === ' ') && !e.target.closest('.pin,.imdb')){ e.preventDefault(); open(); }
+    });
+  });
+  $('#out').querySelectorAll('.pin').forEach(b => {
+    b.addEventListener('click', e => {
+      e.stopPropagation();
+      const id = b.dataset.pin;
+      if (PINNED.has(id)) PINNED.delete(id);
+      else {
+        // Stamp the role from the search that produced this row. A shortlist is
+        // built across several searches, so reading it back off the current
+        // query would relabel everyone with whatever was searched last.
+        const c = (LAST.candidates || []).find(x => x.nconst === id);
+        if (c) PINNED.set(id, { ...c, role: LAST.query.role, genres: LAST.query.genres });
+      }
+      render(0);
+    });
+  });
+  $('#out').querySelectorAll('.member').forEach(m =>
+    m.addEventListener('click', () => openProfile(m.dataset.nconst)));
+  const more = $('#more');
+  if (more) more.addEventListener('click', () => {
+    LIMIT += 12;
+    more.textContent = 'Loading…'; more.disabled = true;
+    search($('#filters').open ? readFilters() : null);
   });
 }
 
+/* ---------------------------------------------------------------- shortlist */
+function renderDock(){
+  const n = PINNED.size;
+  $('#dock').hidden = n === 0;
+  $('#dock-n').textContent = n;
+  $('#dock-names').textContent = [...PINNED.values()].map(c => c.name).join(', ');
+}
+$('#clear').addEventListener('click', () => { PINNED.clear(); render(0); });
+$('#export').addEventListener('click', () => {
+  const head = ['name','role','matched_genres','matching_credits','total_credits','avg_rating',
+                'votes_reached','most_recent','notable_titles','imdb_url'];
+  const cell = v => `"${String(v ?? '').replace(/"/g,'""')}"`;
+  const body = [...PINNED.values()].map(c => [
+    c.name, (c.role || '').replace(/_/g,' '), (c.genres || []).join(' | '),
+    c.genre_credits, c.credits, c.avg_rating, c.reach,
+    c.most_recent, c.sample_titles.join(' | '), `https://www.imdb.com/name/${c.nconst}/`
+  ].map(cell).join(','));
+  const csv = [head.join(','), ...body].join('\n');
+  const url = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+  const a = document.createElement('a');
+  a.href = url;
+  const roles = [...new Set([...PINNED.values()].map(c => c.role).filter(Boolean))];
+  const tag = roles.length === 1 ? roles[0] : 'mixed';
+  a.download = `reel-crew-shortlist-${tag}-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+
+/* ---------------------------------------------------------------- profile */
 async function openProfile(nconst){
-  $('#drawer-body').innerHTML = `<p class="brief-label">Assembling profile…</p>`;
+  $('#drawer-body').innerHTML = `<p class="lbl">Assembling profile…</p>`;
   setDrawer(true);
   try {
     const p = await (await fetch('/api/profile/'+nconst)).json();
@@ -372,8 +580,8 @@ async function openProfile(nconst){
     const maxR = Math.max(...tl.map(t => t.avg_rating), 1);
     $('#drawer-body').innerHTML = `
       <h2 style="margin:0 34px 2px 0;font-size:26px">${esc(p.name)}</h2>
-      <p class="brief-label" style="margin:0">${esc((p.roles||[]).join(' / ').replace(/_/g,' '))} ·
-         active ${p.career_span[0]}–${p.career_span[1]}</p>
+      <p class="lbl" style="margin:0">${esc((p.roles||[]).join(' / ').replace(/_/g,' '))} · active ${p.career_span[0]}–${p.career_span[1]}
+         · <a class="imdb" href="https://www.imdb.com/name/${esc(nconst)}/" target="_blank" rel="noopener noreferrer">IMDb ↗</a></p>
       <div class="kv">
         <div><b>${p.credits}</b><span>credits</span></div>
         <div><b>${p.avg_rating}</b><span>avg rating</span></div>
@@ -386,15 +594,17 @@ async function openProfile(nconst){
         <span style="text-align:right">${g.credits}</span></div>`).join('')}</div>
       <h4>Rating by year</h4>
       <div class="spark">${tl.map(t => `<i style="height:${(t.avg_rating/maxR)*100}%" title="${t.year}: ${t.avg_rating} over ${t.credits} credit(s)"></i>`).join('')}</div>
-      <p class="brief-label" style="margin:0">${tl.length ? tl[0].year+' → '+tl[tl.length-1].year : ''}</p>
-      <h4>Works repeatedly with</h4>
-      ${(p.collaborators||[]).map(c => `<div class="member" style="padding:9px 0">
-        <div><div class="nm" style="font-size:15px">${esc(c.name)}</div>
-             <div class="role">${esc(c.roles.join(' / ').replace(/_/g,' '))}</div></div>
-        <div style="text-align:right"><div class="together">${c.films_together}</div>
-             <div class="shared">${esc(c.shared_titles.slice(0,2).join(' · '))}</div></div>
-      </div>`).join('') || '<p class="brief-label">No shared titles in the filtered corpus.</p>'}
-      <p class="brief-label" style="margin-top:20px">Computed in ${p.engine.profile_ms + p.engine.timeline_ms + p.engine.collaborators_ms} ms across three ClickHouse queries.</p>`;
+      <p class="lbl" style="margin:0">${tl.length ? tl[0].year+' → '+tl[tl.length-1].year : ''}</p>
+      <h4>Works repeatedly with — select anyone to follow the graph</h4>
+      ${(p.collaborators||[]).map(c => `<button class="member" style="padding:9px 0" data-go="${esc(c.nconst)}">
+        <span><span class="nm" style="font-size:15px;display:block">${esc(c.name)}</span>
+              <span class="role">${esc(c.roles.join(' / ').replace(/_/g,' '))}</span></span>
+        <span style="text-align:right"><span class="together" style="display:block">${c.films_together}</span>
+              <span class="shared">${esc(c.shared_titles.slice(0,2).join(' · '))}</span></span>
+      </button>`).join('') || '<p class="lbl">No shared titles in the filtered corpus.</p>'}
+      <p class="lbl" style="margin-top:20px">Computed in ${p.engine.profile_ms + p.engine.timeline_ms + p.engine.collaborators_ms} ms across three ClickHouse queries.</p>`;
+    $('#drawer-body').querySelectorAll('[data-go]').forEach(b =>
+      b.addEventListener('click', () => openProfile(b.dataset.go)));
   } catch (err) {
     $('#drawer-body').innerHTML = `<div class="msg bad"><b>Profile unavailable.</b>${esc(err.message)}</div>`;
   }

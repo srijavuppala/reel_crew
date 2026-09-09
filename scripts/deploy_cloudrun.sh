@@ -6,7 +6,7 @@ set -a; source .env; set +a
 
 : "${GCP_PROJECT:?Set GCP_PROJECT=your-project-id}"
 REGION="${GCP_REGION:-us-central1}"
-SERVICE="${SERVICE_NAME:-below-the-line}"
+SERVICE="${SERVICE_NAME:-reel-crew}"
 
 gcloud run deploy "$SERVICE" \
   --source . \

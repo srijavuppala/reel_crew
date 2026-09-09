@@ -8,6 +8,7 @@ never the control flow and never the candidate set.
 """
 from __future__ import annotations
 
+import json
 import time
 from typing import Optional
 
@@ -42,10 +43,46 @@ def node_parse(node_input: str) -> RunState:
 
     Entry node: takes the raw brief straight from START, so the ADK runtime
     binds the user message to it without any state plumbing.
+
+    It also accepts an explicit CrewQuery as JSON. That is what the filter
+    controls send, so tuning a search by hand runs through the same graph
+    instead of a second code path.
     """
     t0 = time.perf_counter()
-    state = RunState(brief=node_input)
-    q, how = parse_brief(state.brief)
+
+    # The entry payload may be raw prose, or JSON carrying the brief, the row
+    # limit, and optionally an explicit CrewQuery. Underscore keys are envelope
+    # fields; everything else belongs to the query itself.
+    brief_text, limit, explicit = node_input, None, None
+    if node_input.lstrip().startswith("{"):
+        try:
+            payload = json.loads(node_input)
+            if isinstance(payload, dict):
+                brief_text = payload.get("_brief") or node_input
+                limit = payload.get("_limit")
+                spec = {k: v for k, v in payload.items() if not k.startswith("_")}
+                if spec.get("role"):
+                    explicit = CrewQuery.model_validate(spec)
+        except (ValueError, TypeError):
+            brief_text, limit, explicit = node_input, None, None
+
+    state = RunState(brief=brief_text)
+    if limit:
+        state.limit = int(limit)
+
+    if explicit is not None:
+        state.query = explicit
+        state.engine["parser"] = "explicit filters"
+        state.trace.append(TraceStep(
+            step="parse",
+            detail=f"filters set by hand: role={explicit.role}, "
+                   f"genres={explicit.genres or 'any'}, rating>={explicit.min_rating}, "
+                   f"year>={explicit.year_from}, credits>={explicit.min_credits}",
+            ms=int((time.perf_counter() - t0) * 1000),
+        ))
+        return state
+
+    q, how = parse_brief(brief_text)
     state.query = q
     state.engine["parser"] = how
     state.trace.append(TraceStep(
@@ -113,7 +150,7 @@ def build_workflow():
     from google.adk import Workflow
 
     return Workflow(
-        name="below_the_line",
+        name="reel_crew",
         description="Producer brief -> ranked crew shortlist with collaboration package",
         edges=[
             ("START", node_parse),
@@ -150,9 +187,9 @@ async def run_workflow(brief: str, limit: int = 12) -> SearchResult:
         from google.genai import types
 
         wf = build_workflow()
-        runner = InMemoryRunner(node=wf, app_name="below_the_line")
+        runner = InMemoryRunner(node=wf, app_name="reel_crew")
         session = await runner.session_service.create_session(
-            app_name="below_the_line", user_id="producer"
+            app_name="reel_crew", user_id="producer"
         )
         final_state = None
         async for event in runner.run_async(

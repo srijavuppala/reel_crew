@@ -1,6 +1,7 @@
 """FastAPI backend. ClickHouse is called at runtime on every request."""
 from __future__ import annotations
 
+import json
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
@@ -12,12 +13,12 @@ from pydantic import BaseModel, Field
 from agent import queries
 from agent.config import GEMINI_ENABLED, GEMINI_MODEL, gemini_backend
 from agent.graph import run_workflow
-from agent.schema import SearchResult
+from agent.schema import CrewQuery, SearchResult
 
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
 
 app = FastAPI(
-    title="Below the Line",
+    title="Reel Crew",
     description="Crew discovery over IMDb public datasets, ranked by ClickHouse.",
     version="1.0.0",
 )
@@ -28,7 +29,10 @@ app.add_middleware(
 
 class SearchRequest(BaseModel):
     brief: str = Field(..., min_length=3, max_length=1000)
-    limit: int = Field(12, ge=1, le=50)
+    limit: int = Field(12, ge=1, le=100)
+    # When the filter controls are used, the exact spec is sent instead of
+    # re-parsing the prose, so hand edits are not overwritten by the parser.
+    query: CrewQuery | None = None
 
 
 @app.get("/api/health")
@@ -60,7 +64,10 @@ def stats():
 async def search(req: SearchRequest):
     """Brief in -> parsed query, ranked candidates, package, narration, trace."""
     try:
-        return await run_workflow(req.brief, limit=req.limit)
+        payload = req.query.model_dump() if req.query is not None else {}
+        payload["_brief"] = req.brief
+        payload["_limit"] = req.limit
+        return await run_workflow(json.dumps(payload), limit=req.limit)
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 

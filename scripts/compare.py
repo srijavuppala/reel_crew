@@ -86,7 +86,7 @@ def main() -> None:
         except Exception as exc:  # noqa: BLE001
             print(f"  Gemini call failed: {exc}")
 
-    print("\n[B] Below the Line -- ranked by ClickHouse over real credits")
+    print("\n[B] Reel Crew -- ranked by ClickHouse over real credits")
     print("-" * 78)
     r = run_direct(BRIEF, limit=8)
     for i, c in enumerate(r.candidates, 1):
