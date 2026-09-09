@@ -17,9 +17,9 @@ Completed September 8, 2026. One ranked slate per staffable craft, a 100-point m
 four components each carry the column they were computed from, and Q5 — the ClickHouse funnel
 behind each slate, stage by stage. Q6 reports which of the assembled crew already work together.
 
-## Phase 4 — Producer command center
+## Phase 4 — Producer command center ✓
 
-Connect project KPIs, crew coverage, schedule, budget, risks, and the agent workflow in one decision surface.
+Completed September 9, 2026. The overview now connects project KPIs, crew coverage, schedule, budget, risks, and a six-stage agent workflow in one producer decision surface.
 
 ## Phase 5 — Replanning and optimization
 
