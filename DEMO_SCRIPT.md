@@ -71,7 +71,7 @@ End on the populated shortlist.
 
 ## Recording checklist
 
-- [ ] Hosted URL is open; do not record localhost.
+- [x] Hosted URL is live: https://reel-crew-10453428907.us-central1.run.app
 - [ ] `/api/health` reports ClickHouse connected, Gemini enabled, and the intended backend.
 - [ ] The exact demo brief returns good candidates before recording.
 - [ ] Browser notifications and personal bookmarks are hidden.

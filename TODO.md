@@ -39,8 +39,7 @@
 - [x] Keyboard access, focus states, reduced-motion, mobile breakpoint
 - [x] `Dockerfile` + `scripts/deploy_cloudrun.sh`
 - [x] Google Cloud CLI installed and authenticated (deploy script resolves Homebrew's cask path)
-- [ ] **Deploy to Cloud Run and capture the hosted URL** — billing must be linked to
-      `gkehackathon-471322`; authentication and deployment script are ready
+- [x] Deployed to Cloud Run: https://reel-crew-10453428907.us-central1.run.app
 - [x] Gemini Enterprise Agent Platform (Vertex AI) integrated — express-key and ADC paths,
       auto-detected from the key prefix, backend reported in `/api/health`
 - [x] **Gemini live** — AI Studio key working; parse and narrate both run on gemini-2.5-flash
@@ -55,14 +54,13 @@
 - [x] ClickHouse selected as the submission track in the submission draft
 - [x] Public repo pushed: https://github.com/srijavuppala/reel_crew
 - [ ] Confirm GitHub displays the MIT license and set the repository About metadata
-- [ ] Hosted URL live, video public and in English
+- [x] Hosted URL live and verified end to end
+- [ ] Demo video public and in English
 - [ ] Submit with buffer — not at 4:55pm
 
 ## Blocked on you
 1. **Rotate the API key before this goes anywhere public** — it was shared in a chat transcript.
-2. **Enable billing on `gkehackathon-471322`** — Google Cloud currently rejects Cloud Run,
-   Cloud Build, and Artifact Registry API activation with `UREQ_PROJECT_BILLING_NOT_FOUND`.
-3. **Public demo video** — record after the hosted URL is stable.
+2. **Public demo video** — record from the stable Cloud Run URL.
 
 ## Open decisions from the PRD
 1. Solo or team? Phases 1 and 2 parallelize cleanly (data/agent vs UI/deploy).

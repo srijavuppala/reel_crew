@@ -90,7 +90,7 @@ JavaScript, HTML, CSS, Docker, IMDb public datasets.
 
 ## Links to complete before submission
 
-- Hosted project: `TODO`
+- Hosted project: https://reel-crew-10453428907.us-central1.run.app
 - Source: https://github.com/srijavuppala/reel_crew
 - Demo video: `TODO`
 - Partner track: **ClickHouse**
