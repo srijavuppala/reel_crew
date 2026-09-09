@@ -73,7 +73,7 @@ row count on every search.
 The UI reports which engine served each stage (`parse: gemini | rule-based`,
 `runtime: adk-workflow`), so what actually ran is visible rather than claimed.
 
-## The three queries that are the product
+## The four queries that are the product
 
 **Q1 — ranked search.** Aggregates matching credits, average rating, reach and recency per
 person, ranked by genre match then reach-weighted quality.
@@ -88,6 +88,21 @@ reconstructed from credits alone.
 **Q3 — profile assembly.** Career span, genre distribution, rating trajectory and top
 collaborators. The statistics are SQL; only the prose is Gemini.
 
+**Q4 — similar profiles.** Every person becomes a 28-dimensional vector of credits per genre,
+compared with `cosineDistance` against a reference person, restricted to the same craft.
+Cosine normalises away career length, so a six-credit DP can match a thirty-credit one on the
+shape of the work rather than the volume of it.
+
+This is the second way into the corpus. Instead of describing the job, point at someone whose
+work you already know. Asked for cinematographers like Jarin Blaschke, it returns Julie
+Kirkwood (*The Blackcoat's Daughter*), Kiyomi Kuroda (*Onibaba*, 1964), Shin'ya Tsukamoto
+(*Tetsuo*) and Decha Srimantra (*The Eye*) — Japanese, Thai and Mexican horror alongside the
+American names, which is the coverage argument made into a feature.
+
+"Only lower-profile" caps candidates at the reference's own audience reach. That is the
+practical form of the question a line producer actually asks: someone who works like this,
+that the production can afford to book.
+
 ## Using it
 
 - **Brief** — type what you need in plain English and hit Find crew.
@@ -97,6 +112,8 @@ collaborators. The statistics are SQL; only the prose is Gemini.
 - **Sort** — reorder by match, rating, reach or recency without re-querying.
 - **Shortlist** — pin people across several searches, then export CSV. Each row keeps the role
   and genres from the search that found it, so a mixed shortlist stays correctly labelled.
+- **Works like** — every profile ends with the people whose credit history points the same
+  way, with a toggle to keep only those below the reference's reach.
 - **Follow the graph** — select anyone in the department panel or a profile to open their own
   profile and keep walking the collaboration network.
 - **Verify** — every row links to the person's IMDb page. The titles check out.

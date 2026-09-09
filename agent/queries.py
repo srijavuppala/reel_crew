@@ -92,6 +92,63 @@ GROUP BY year ORDER BY year
 """
 
 
+# ------------------------------------------------------- Q4: similar profiles
+# IMDb's genre list is a fixed, closed vocabulary. Holding it in Python rather
+# than deriving it per query keeps the vector dimensions stable between calls,
+# so two people are always compared on the same axes.
+GENRE_VOCAB = [
+    "Action", "Adult", "Adventure", "Animation", "Biography", "Comedy", "Crime",
+    "Documentary", "Drama", "Family", "Fantasy", "Film-Noir", "Game-Show",
+    "History", "Horror", "Music", "Musical", "Mystery", "News", "Reality-TV",
+    "Romance", "Sci-Fi", "Short", "Sport", "Talk-Show", "Thriller", "War",
+    "Western",
+]
+
+Q4_SIMILAR = """
+WITH
+    {vocab:Array(String)} AS vocab,
+    -- the reference person's main craft: comparing a DP to a composer is meaningless
+    (SELECT topK(1)(category)[1]
+       FROM crew_credits WHERE nconst = {nconst:String})          AS ref_cat,
+    -- one bucket per genre, counted over that person's credits in that craft
+    (SELECT arrayMap(g -> countEqual(arrayFlatten(groupArray(genres)), g), vocab)
+       FROM crew_credits
+      WHERE nconst = {nconst:String} AND category = ref_cat)      AS ref_vec,
+    (SELECT sum(votes)
+       FROM crew_credits
+      WHERE nconst = {nconst:String} AND category = ref_cat)      AS ref_reach
+SELECT
+    nconst,
+    any(name)                                        AS name,
+    -- NOT aliased `category`: that name would shadow the table's own column and
+    -- silently turn the WHERE below into `ref_cat = ref_cat`, matching every craft
+    ref_cat                                          AS role,
+    count()                                          AS credits,
+    round(avg(rating), 2)                            AS avg_rating,
+    sum(votes)                                       AS reach,
+    max(year)                                        AS most_recent,
+    -- cosine normalises away career length, so a 6-credit DP can match a
+    -- 30-credit one on the shape of the work rather than the volume of it
+    round(1 - cosineDistance(
+        arrayMap(g -> countEqual(arrayFlatten(groupArray(genres)), g), vocab),
+        ref_vec), 3)                                 AS similarity,
+    arraySlice(arrayDistinct(arrayMap(x -> x.2, arrayReverseSort(x -> x.1,
+        groupArray((votes, title))))), 1, 3)         AS sample_titles
+FROM crew_credits
+WHERE crew_credits.category = ref_cat
+  AND nconst   != {nconst:String}
+  AND year     >= {year_from:UInt16}
+  AND votes    >= {min_votes:UInt32}
+GROUP BY nconst
+HAVING credits >= {min_credits:UInt8}
+   AND similarity > 0
+   -- "someone who works like this, that I can actually get"
+   AND ({under_reference:UInt8} = 0 OR reach < ref_reach)
+ORDER BY similarity DESC, log10(reach + 10) * avg_rating DESC
+LIMIT {limit:UInt8}
+"""
+
+
 def _run(sql: str, params: dict[str, Any]) -> tuple[list[dict], float, str]:
     """Execute a parameterized query; return rows, elapsed ms, and the SQL text."""
     client = get_client()
@@ -121,6 +178,21 @@ def get_profile(nconst: str):
 
 def get_timeline(nconst: str):
     return _run(Q3_TIMELINE, {"nconst": nconst})
+
+
+def find_similar(nconst: str, under_reference: bool = False, year_from: int = 1900,
+                 min_credits: int = 3, min_votes: int = 1000, limit: int = 12):
+    """People whose genre mix points the same way as this person's.
+
+    The reference's own craft and genre vector come out of the same query, so a
+    caller only has to supply the person -- there is nothing to keep in sync.
+    """
+    return _run(Q4_SIMILAR, {
+        "nconst": nconst, "vocab": GENRE_VOCAB,
+        "under_reference": 1 if under_reference else 0,
+        "year_from": int(year_from), "min_credits": int(min_credits),
+        "min_votes": int(min_votes), "limit": int(limit),
+    })
 
 
 def corpus_stats() -> dict[str, int]:

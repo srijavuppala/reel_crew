@@ -27,11 +27,19 @@
 - [x] Clickable collaborators — walk the graph from any person to any other
 - [x] IMDb verification link on every candidate
 
+## Phase 1.6 — Similarity search  ✅ complete
+- [x] Q4: 28-genre credit vector per person, `cosineDistance` against a reference, same craft only
+- [x] `GET /api/similar/{nconst}` with an `under_reference` reach cap
+- [x] "Works like X" panel in every profile, chainable like the collaborator list
+- [x] Fixed: aliasing the output column `category` shadowed the table column and silently
+      disabled the craft filter, returning writers and producers for a DP query
+
 ## Phase 2 — Design and impact  ◑ in progress
 - [x] Empty and error states written as product copy, not stack traces
 - [x] Keyboard access, focus states, reduced-motion, mobile breakpoint
 - [x] `Dockerfile` + `scripts/deploy_cloudrun.sh`
-- [ ] **Deploy to Cloud Run and capture the hosted URL** — needs `gcloud` (not installed) + a GCP project
+- [x] `gcloud` installed (Google Cloud SDK 583.0.0, via Homebrew)
+- [ ] **Deploy to Cloud Run and capture the hosted URL** — needs `gcloud auth login` + a GCP project
 - [x] Gemini Enterprise Agent Platform (Vertex AI) integrated — express-key and ADC paths,
       auto-detected from the key prefix, backend reported in `/api/health`
 - [x] **Gemini live** — AI Studio key working; parse and narrate both run on gemini-2.5-flash

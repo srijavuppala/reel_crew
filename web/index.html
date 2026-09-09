@@ -184,6 +184,9 @@ td.l{text-align:left}
 .dock .names{font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);flex:1 1 320px;min-width:0}
 .dock b{font-family:var(--sans);font-size:17px;color:var(--ink)}
 
+.captog{float:right;font:400 11px/1 'Barlow Semi Condensed',sans-serif;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--ink-soft);cursor:pointer;display:flex;align-items:center;gap:5px}
+.captog input{accent-color:var(--goldenrod);cursor:pointer}
 /* ---------- profile drawer ---------- */
 .drawer{
   position:fixed;inset:0 0 0 auto;width:min(580px,100%);background:var(--paper);
@@ -301,6 +304,8 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--rule);font-fa
 <script>
 const $ = s => document.querySelector(s);
 const fmt = n => (n ?? 0).toLocaleString();
+// compact form, so a candidate's whole summary line still fits without wrapping
+const brief = n => n >= 1e6 ? (n/1e6).toFixed(1)+'M' : n >= 1e3 ? Math.round(n/1e3)+'K' : String(n ?? 0);
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
 const ROLES = ["cinematographer","editor","composer","production_designer","casting_director","director","writer","producer"];
@@ -602,11 +607,44 @@ async function openProfile(nconst){
         <span style="text-align:right"><span class="together" style="display:block">${c.films_together}</span>
               <span class="shared">${esc(c.shared_titles.slice(0,2).join(' · '))}</span></span>
       </button>`).join('') || '<p class="lbl">No shared titles in the filtered corpus.</p>'}
+      <h4>Works like ${esc(p.name)}
+        <label class="captog"><input type="checkbox" id="sim-cap"> only lower-profile</label></h4>
+      <div id="sim"><p class="lbl">Comparing genre profiles…</p></div>
       <p class="lbl" style="margin-top:20px">Computed in ${p.engine.profile_ms + p.engine.timeline_ms + p.engine.collaborators_ms} ms across three ClickHouse queries.</p>`;
     $('#drawer-body').querySelectorAll('[data-go]').forEach(b =>
       b.addEventListener('click', () => openProfile(b.dataset.go)));
+    const cap = $('#sim-cap');
+    cap.addEventListener('change', () => loadSimilar(nconst, cap.checked));
+    loadSimilar(nconst, false);
   } catch (err) {
     $('#drawer-body').innerHTML = `<div class="msg bad"><b>Profile unavailable.</b>${esc(err.message)}</div>`;
+  }
+}
+
+/* Similarity is a second way into the corpus: instead of describing the job you
+   want, point at someone whose work you already know. The reach cap turns that
+   into the bookable version of the question. */
+async function loadSimilar(nconst, cap){
+  const box = $('#sim');
+  if (!box) return;
+  box.innerHTML = `<p class="lbl">Comparing genre profiles…</p>`;
+  try {
+    const r = await (await fetch(`/api/similar/${nconst}?under_reference=${cap}&limit=10`)).json();
+    if (r.detail) throw new Error(r.detail);
+    const cs = r.candidates || [];
+    box.innerHTML = cs.map(c => `<button class="member" style="padding:9px 0" data-go="${esc(c.nconst)}">
+      <span><span class="nm" style="font-size:15px;display:block">${esc(c.name)}</span>
+            <span class="role">${c.credits} credits · ${c.avg_rating} avg · ${brief(c.reach)} reach · to ${c.most_recent}</span></span>
+      <span style="text-align:right"><span class="together" style="display:block">${Math.round(c.similarity*100)}%</span>
+            <span class="shared">${esc(c.sample_titles.slice(0,2).join(' · '))}</span></span>
+    </button>`).join('')
+      || `<p class="lbl">Nobody else in the corpus works this way.</p>`;
+    box.insertAdjacentHTML('beforeend', `<p class="lbl" style="margin-top:12px">Cosine
+      similarity over a 28-genre credit vector, same craft only. ${r.engine.similar_ms} ms in ClickHouse.</p>`);
+    box.querySelectorAll('[data-go]').forEach(b =>
+      b.addEventListener('click', () => openProfile(b.dataset.go)));
+  } catch (err) {
+    box.innerHTML = `<div class="msg bad">${esc(err.message)}</div>`;
   }
 }
 

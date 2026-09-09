@@ -108,6 +108,32 @@ def profile(nconst: str):
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
+@app.get("/api/similar/{nconst}")
+def similar(nconst: str, under_reference: bool = False, limit: int = 12):
+    """Q4 -- people whose body of work points the same way as this person's.
+
+    `under_reference=true` keeps only those with less audience reach than the
+    reference, which is the practical version of the question a line producer
+    actually asks: someone who works like this, that the production can book.
+    """
+    if not nconst.startswith("nm"):
+        raise HTTPException(status_code=400, detail="nconst must look like nm0000123")
+    try:
+        rows, ms, sql = queries.find_similar(
+            nconst, under_reference=under_reference, limit=max(1, min(limit, 50)))
+        return {
+            "nconst": nconst,
+            "role": rows[0]["role"] if rows else None,
+            "under_reference": under_reference,
+            "candidates": rows,
+            "engine": {"similar_ms": int(ms), "sql": sql},
+        }
+    except HTTPException:
+        raise
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
 if WEB_DIR.exists():
     app.mount("/static", StaticFiles(directory=WEB_DIR), name="static")
 
