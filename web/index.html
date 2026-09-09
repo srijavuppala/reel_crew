@@ -855,7 +855,7 @@ async function search(override){
     render(Math.round(performance.now() - t0));
   } catch (err) {
     $('#out').innerHTML = `<div class="msg bad"><b>The search did not run.</b>${esc(err.message)}
-      <br><br>Check that the API can reach ClickHouse: <code>curl localhost:8000/api/health</code></div>`;
+      <br><br>Check that the API can reach ClickHouse: <code>curl ${API || location.origin}/api/health</code></div>`;
   } finally {
     $('#go').disabled = $('#apply').disabled = false;
     $('#status').textContent = '';
