@@ -408,12 +408,15 @@ button.go{background:var(--ink);border-radius:9px}.brief-block button.go:after{c
 .roster-stat{background:var(--paper);padding:16px 22px}.roster-stat b{display:block;font-size:24px}.roster-stat span{font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.06em}
 .roster-list{padding:8px 20px 20px}.roster-row{display:grid;grid-template-columns:minmax(180px,1.4fr) 1fr 1fr 110px 100px 36px;gap:12px;align-items:center;padding:14px 4px;border-bottom:1px solid var(--rule-faint)}
 .roster-person b{display:block}.roster-person span,.roster-cell{font-size:12px;color:var(--ink-soft)}.status-badge{display:inline-block;padding:5px 9px;border-radius:999px;background:var(--navy-soft);color:var(--focus);font-size:11px;font-weight:700}.roster-remove{border:0;background:transparent;color:var(--ink-soft);font-size:20px;cursor:pointer}.roster-empty{text-align:center;color:var(--ink-soft);padding:38px 10px;font-size:14px}
+.command-hero{display:flex;justify-content:space-between;gap:24px;align-items:flex-end;margin-bottom:20px;padding:4px 2px 18px;border-bottom:1px solid var(--rule-faint)}.command-hero h3{font-size:28px;letter-spacing:-.04em;margin:3px 0}.command-hero p{margin:0;color:var(--ink-soft);font-size:13px}.command-state{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}.command-state:before{content:"";width:7px;height:7px;border-radius:50%;background:#E9A23B}
+.command-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}.command-card{background:#F7F7F4;border-radius:13px;padding:15px}.command-card span{display:block;font-size:11px;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em}.command-card b{display:block;font-size:22px;margin:3px 0}.command-card small{font-size:11px;color:var(--ink-soft)}.command-card.risk b{color:var(--pink)}
+.agent-network{padding:18px;border:1px solid var(--rule-faint);border-radius:14px;margin-top:20px}.agent-network-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}.agent-network-head h4{margin:0}.agent-network-head span{font-size:11px;color:var(--ink-soft)}.agent-flow{display:grid;grid-template-columns:repeat(6,1fr);gap:14px}.agent-step{position:relative;padding:12px 10px;background:#F7F7F4;border-radius:10px;min-height:78px}.agent-step:not(:last-child):after{content:"→";position:absolute;right:-12px;top:28px;color:var(--ink-soft)}.agent-step b{display:block;font-size:12px}.agent-step span{display:block;font-size:10px;color:var(--ink-soft);margin-top:4px}.agent-step.done{box-shadow:inset 0 0 0 1px #DAD8FF}.agent-step.done b{color:var(--focus)}
 footer{grid-area:foot}
 @media(max-width:900px){
   .wrap{display:block;padding:16px 18px 90px}.slate{margin-bottom:16px}.slate .sub{display:none}.counts{display:none}
-  .app-nav{position:static;display:flex;flex-direction:row;margin:0 0 34px;padding:5px;background:#E8E8E4;border-radius:12px}.nav-label{display:none}.app-nav button{text-align:center}.app-nav button:before,.app-nav button[aria-selected="true"]:after{display:none}.roster-form{grid-template-columns:1fr 1fr}.roster-row{grid-template-columns:1.4fr 1fr 100px 36px}.roster-row .roster-contact,.roster-row .roster-notes{display:none}
+  .app-nav{position:static;display:flex;flex-direction:row;margin:0 0 34px;padding:5px;background:#E8E8E4;border-radius:12px}.nav-label{display:none}.app-nav button{text-align:center}.app-nav button:before,.app-nav button[aria-selected="true"]:after{display:none}.roster-form{grid-template-columns:1fr 1fr}.roster-row{grid-template-columns:1.4fr 1fr 100px 36px}.roster-row .roster-contact,.roster-row .roster-notes{display:none}.command-grid{grid-template-columns:1fr 1fr}.agent-flow{grid-template-columns:repeat(3,1fr)}.agent-step:nth-child(3):after{display:none}
 }
-@media(max-width:600px){.page-title{font-size:40px}.page-intro{font-size:15px}.brief-block,.prod-body{padding:18px}.prod-grid{grid-template-columns:1fr}.prod-cards{grid-template-columns:1fr 1fr}.app-nav{overflow-x:auto}.app-nav button{white-space:nowrap}.roster-form{grid-template-columns:1fr}.roster-form .wide{grid-column:auto}.roster-summary{grid-template-columns:1fr 1fr 1fr}.roster-stat{padding:12px}.roster-row{grid-template-columns:1fr 94px 30px}.roster-row .roster-rate{display:none}}
+@media(max-width:600px){.page-title{font-size:40px}.page-intro{font-size:15px}.brief-block,.prod-body{padding:18px}.prod-grid{grid-template-columns:1fr}.prod-cards{grid-template-columns:1fr 1fr}.app-nav{overflow-x:auto}.app-nav button{white-space:nowrap}.roster-form{grid-template-columns:1fr}.roster-form .wide{grid-column:auto}.roster-summary{grid-template-columns:1fr 1fr 1fr}.roster-stat{padding:12px}.roster-row{grid-template-columns:1fr 94px 30px}.roster-row .roster-rate{display:none}.command-hero{display:block}.command-state{margin-top:12px}.command-grid{grid-template-columns:1fr 1fr}.agent-flow{grid-template-columns:1fr}.agent-step:after{display:none!important}}
 </style>
 </head>
 <body>
@@ -758,13 +761,19 @@ $('#p-plan').addEventListener('click', async () => {
     if (!response.ok) throw new Error((await response.json()).detail || response.statusText);
     const p = PRODUCTION_PLAN = await response.json(), money = n => new Intl.NumberFormat(undefined,{style:'currency',currency:p.currency,maximumFractionDigits:0}).format(n);
     $('#plan-nav').hidden = false;
-    $('#p-out').innerHTML = `<section class="plan-page" data-plan="overview"><div class="prod-cards">
-      <div class="prod-card"><b>${p.summary.scene_count}</b><span>scenes</span></div>
-      <div class="prod-card"><b>${p.summary.estimated_pages}</b><span>estimated pages</span></div>
-      <div class="prod-card"><b>${p.summary.planned_shoot_days}</b><span>planned shoot days</span></div>
-      <div class="prod-card"><b>${money(p.summary.total_budget)}</b><span>planning budget</span></div>
-      <div class="prod-card"><b>${money(p.summary.budget_per_shoot_day)}</b><span>budget / shoot day</span></div>
-    </div><div class="prod-cols"><div><h4>Production footprint</h4><ul class="prod-list"><li>${p.summary.location_count} locations</li><li>${p.summary.exterior_scenes} exterior scenes</li><li>${p.summary.night_scenes} night/twilight scenes</li></ul></div><div><h4>Plan status</h4><p class="lbl">Draft · human review required before this becomes a production baseline.</p></div></div></section>
+    const staffable = p.roles.filter(r=>r.staffable).length, highRisks = p.risks.filter(r=>r.severity==='high').length;
+    $('#p-out').innerHTML = `<section class="plan-page" data-plan="overview">
+      <div class="command-hero"><div><span class="page-kicker">Production command center</span><h3>${esc(p.title)}</h3><p>${esc(p.brief.tone)} · ${esc((p.brief.genres||[]).join(' / ')||'Genre open')}</p></div><span class="command-state">Draft for producer review</span></div>
+      <div class="command-grid">
+        <div class="command-card"><span>Script</span><b>${p.summary.scene_count} scenes</b><small>${p.summary.location_count} locations · ${p.summary.estimated_pages} pages</small></div>
+        <div class="command-card"><span>Schedule</span><b>${p.summary.planned_shoot_days} days</b><small>${p.summary.night_scenes} night · ${p.summary.exterior_scenes} exterior</small></div>
+        <div class="command-card"><span>Budget</span><b>${money(p.summary.total_budget)}</b><small>${money(p.summary.budget_per_shoot_day)} per shoot day</small></div>
+        <div class="command-card risk"><span>Production risk</span><b>${highRisks} high</b><small>${p.risks.length} total signals require review</small></div>
+      </div>
+      <div class="prod-cols"><div><h4>Crew coverage</h4><p><b style="font-size:26px">${staffable}</b> IMDb credit-backed roles ready to staff.</p><button class="go" id="overview-crew">Review roles & build crew</button></div><div><h4>Producer decision</h4><p class="lbl">The agents have prepared a draft. Review crew, schedule, finance, and risk before accepting a production baseline.</p></div></div>
+      <div class="agent-network"><div class="agent-network-head"><h4>Reel Crew agent network</h4><span>Deterministic workflow · human approval required</span></div><div class="agent-flow">
+        <div class="agent-step done"><b>Script Agent</b><span>${p.summary.scene_count} scenes understood</span></div><div class="agent-step done"><b>Crew Agent</b><span>${p.roles.length} roles derived</span></div><div class="agent-step done"><b>Schedule Agent</b><span>${p.summary.planned_shoot_days} days built</span></div><div class="agent-step done"><b>Finance Agent</b><span>Top sheet balanced</span></div><div class="agent-step done"><b>Risk Agent</b><span>${p.risks.length} signals found</span></div><div class="agent-step"><b>Producer</b><span>Awaiting review</span></div>
+      </div></div></section>
       <section class="plan-page" data-plan="crew" hidden>
         <h4>What this screenplay needs</h4>
         <p class="lbl">Read from the scenes themselves: ${esc((p.brief.genres||[]).join(', ')||'no genre signal')} · ${esc(p.brief.tone)}
@@ -786,6 +795,7 @@ $('#p-plan').addEventListener('click', async () => {
       <section class="plan-page" data-plan="risks" hidden><h4>Risks requiring review</h4><ul class="prod-list">${p.risks.map(r=>`<li><b>${esc(r.severity.toUpperCase())} · ${esc(r.area)}</b> — ${esc(r.issue)}<br>${esc(r.mitigation)}</li>`).join('')||'<li>No automatic signals; human review still required.</li>'}</ul><h4>Planning assumptions</h4><ul class="prod-list">${p.assumptions.map(a=>`<li>${esc(a)}</li>`).join('')}</ul></section>`;
     showPlanPage('overview');
     $('#c-build').addEventListener('click', buildCrew);
+    $('#overview-crew').addEventListener('click', () => showPlanPage('crew'));
   } catch(err) { $('#p-out').innerHTML=`<div class="msg bad"><b>Production plan unavailable.</b>${esc(err.message)}</div>`; }
   finally { button.disabled=false; $('#p-status').textContent=''; }
 });
