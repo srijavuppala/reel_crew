@@ -1,8 +1,8 @@
 # Reel Crew implementation phases
 
-## Phase 1 — Eligibility and runtime foundation
+## Phase 1 — Eligibility and runtime foundation ✓
 
-Integrate and demonstrate official ClickHouse MCP runtime use. Preserve health checks and evidence traces.
+Completed September 9, 2026. All production queries now cross the official read-only `mcp-clickhouse` server; live health and corpus queries verified on Cloud Run.
 
 ## Phase 2 — Screenplay-first production flow
 
