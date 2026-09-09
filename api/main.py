@@ -14,8 +14,10 @@ from agent import queries
 from agent.config import GEMINI_ENABLED, GEMINI_MODEL, gemini_backend
 from agent.graph import run_workflow
 from agent.schema import CrewQuery, SearchResult
-from production.planner import plan_production
-from production.schema import ProductionPlan, ProductionPlanRequest
+from production.crew import build_crew
+from production.planner import break_down, plan_production
+from production.roles import derive_roles, infer_brief
+from production.schema import CrewPlan, ProductionPlan, ProductionPlanRequest
 
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
 
@@ -79,6 +81,37 @@ async def search(req: SearchRequest):
 def production_plan(req: ProductionPlanRequest):
     """Screenplay + constraints -> deterministic schedule, top sheet, and risks."""
     return plan_production(req)
+
+
+class CrewPlanRequest(BaseModel):
+    title: str = Field("Untitled Production", min_length=1, max_length=120)
+    screenplay: str = Field(..., min_length=20, max_length=100_000)
+    genres: list[str] | None = None      # overrides the genres inferred from the script
+    year_from: int = Field(2015, ge=1900, le=2030)
+    min_rating: float = Field(6.0, ge=0, le=10)
+    min_votes: int = Field(1000, ge=0, le=500_000)
+    min_credits: int = Field(2, ge=1, le=40)
+    per_role: int = Field(3, ge=1, le=10)
+
+
+@app.post("/api/production/crew", response_model=CrewPlan)
+def production_crew(req: CrewPlanRequest):
+    """Screenplay -> required roles -> a ranked, credit-backed slate per role.
+
+    Every candidate is a row from a ClickHouse result set; the match score is
+    arithmetic over that row's own columns.
+    """
+    try:
+        scenes = break_down(req.screenplay)
+        brief = infer_brief(req.screenplay, scenes)
+        if req.genres is not None:
+            brief = brief.model_copy(update={"genres": req.genres, "source": "producer override"})
+        return build_crew(
+            title=req.title, brief=brief, roles=derive_roles(scenes),
+            year_from=req.year_from, min_rating=req.min_rating, min_votes=req.min_votes,
+            min_credits=req.min_credits, per_role=req.per_role)
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
 
 
 @app.get("/api/profile/{nconst}")

@@ -105,6 +105,33 @@ input[type=range]{width:100%;accent-color:var(--goldenrod)}
 .prod-grid label{font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
 .prod-grid input,.prod-grid select{display:block;width:100%;margin-top:5px;padding:8px;border:1px solid var(--rule);background:var(--stock);color:var(--ink);font:13px var(--mono)}
 .prod textarea{min-height:180px;border:1px solid var(--rule);padding:10px;margin-top:12px;font-size:13px}
+.bc-slate{border:1px solid var(--rule-faint);padding:13px;margin:12px 0}
+.bc-slate>header{display:flex;align-items:baseline;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.bc-slate h4{margin:0}
+.bc-chip{font:11px var(--mono);color:var(--ink-soft);text-transform:uppercase;letter-spacing:.06em}
+.bc-funnel{font:11.5px var(--mono);color:var(--ink-soft);background:var(--paper);
+  border-left:2px solid var(--goldenrod);padding:7px 9px;margin:9px 0;line-height:1.7}
+.bc-funnel b{color:var(--ink)}
+.bc-cand{border-top:1px solid var(--rule-faint);padding:10px 0 8px}
+.bc-cand-h{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.bc-cand-h b{font-size:15px}
+.bc-name{background:none;border:0;padding:0;font:inherit;font-weight:700;font-size:15px;
+  color:var(--ink);cursor:pointer;text-align:left;border-bottom:1px dotted var(--rule)}
+.bc-name:hover{border-bottom-color:var(--goldenrod)}
+.bc-score{font:700 17px var(--mono);color:var(--goldenrod);white-space:nowrap}
+.bc-why{background:none;border:0;padding:0;margin-top:5px;font:11px var(--mono);
+  color:var(--ink-soft);cursor:pointer;text-transform:uppercase;letter-spacing:.06em}
+.bc-why:hover{color:var(--goldenrod)}
+.bc-why-body{margin:8px 0 2px;border-left:2px solid var(--rule);padding-left:10px}
+.bc-comp{display:grid;grid-template-columns:106px 1fr 62px;gap:8px;align-items:center;margin:5px 0}
+.bc-comp span:first-child{font:11px var(--mono);color:var(--ink-soft)}
+.bc-comp .bc-track{height:8px;background:var(--rule-faint)}
+.bc-comp .bc-track i{display:block;height:8px;background:var(--goldenrod)}
+.bc-comp .bc-num{font:11px var(--mono);color:var(--ink-soft);text-align:right}
+.bc-basis{font:11px var(--mono);color:var(--ink-soft);margin:0 0 7px 114px;line-height:1.6}
+.bc-note{border:1px dashed var(--pink);padding:11px;margin:14px 0}
+.bc-note h4{margin:0 0 6px}
+.bc-chem li b{color:var(--ink)}
 .prod-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin:14px 0}
 .prod-card{border:1px solid var(--rule-faint);padding:10px}.prod-card b{display:block;font-size:21px}.prod-card span{font:11px var(--mono);color:var(--ink-soft)}
 .prod-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}.prod-list{font:12px/1.5 var(--mono);padding-left:18px}
@@ -488,6 +515,7 @@ Customers watch Maya confront JOHN. They fight near the kitchen fire.</textarea>
       <div class="row"><button class="go" id="p-plan">Build production plan</button><span class="lbl" id="p-status"></span></div>
       <nav class="plan-nav" id="plan-nav" aria-label="Production plan pages" hidden>
         <button data-plan-page="overview" aria-selected="true">Overview</button>
+        <button data-plan-page="crew" aria-selected="false">Crew</button>
         <button data-plan-page="schedule" aria-selected="false">Schedule</button>
         <button data-plan-page="budget" aria-selected="false">Budget</button>
         <button data-plan-page="scenes" aria-selected="false">Scenes</button>
@@ -609,6 +637,108 @@ $('#roster-list').addEventListener('click', e => {
 });
 renderRoster();
 
+
+/* ------------------------------------------------------------- build my crew */
+/* Phase 3: the screenplay's role list becomes one ClickHouse slate per craft.
+   Nothing here is generated prose -- every name, number and title on screen came
+   back in a result set, and Explain shows the arithmetic that ordered them. */
+let CREW_PLAN = null;
+
+async function buildCrew(){
+  const button = $('#c-build'), out = $('#crew-out');
+  button.disabled = true;
+  $('#c-status').textContent = 'Querying ClickHouse for every staffable role…';
+  out.innerHTML = '';
+  try {
+    const response = await fetch('/api/production/crew', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ title: $('#p-title').value, screenplay: $('#p-script').value })
+    });
+    if (!response.ok) throw new Error((await response.json()).detail || response.statusText);
+    const c = CREW_PLAN = await response.json();
+    renderCrew(c, out);
+  } catch (err) {
+    out.innerHTML = `<div class="msg bad"><b>Crew unavailable.</b>${esc(err.message)}</div>`;
+  } finally {
+    button.disabled = false; $('#c-status').textContent = '';
+  }
+}
+
+function renderCrew(c, out){
+  const n = x => (x ?? 0).toLocaleString();
+  const slates = c.slates.map(s => {
+    const f = s.funnel;
+    const cands = s.candidates.map(k => `
+      <div class="bc-cand">
+        <div class="bc-cand-h">
+          <button class="bc-name" data-nconst="${esc(k.nconst)}">${esc(k.name)}</button>
+          <span class="bc-score">${k.match_score}</span>
+        </div>
+        <p class="lbl" style="margin:3px 0 0">${esc(k.evidence)}</p>
+        <button class="bc-why" aria-expanded="false">Explain this recommendation</button>
+        <div class="bc-why-body" hidden>
+          ${k.components.map(m => `
+            <div class="bc-comp"><span>${esc(m.label)}</span>
+              <span class="bc-track"><i style="width:${(m.points/m.max_points)*100}%"></i></span>
+              <span class="bc-num">${m.points} / ${m.max_points}</span></div>
+            <p class="bc-basis">${esc(m.basis)}</p>`).join('')}
+          <p class="bc-basis" style="margin-left:0"><b>${k.match_score} / 100.</b>
+             Every figure above is a column from the row ClickHouse returned for this person.</p>
+        </div>
+      </div>`).join('') || '<p class="lbl">No credit-backed candidate cleared the filters for this role.</p>';
+    return `<article class="bc-slate">
+      <header><h4>${esc(s.role)}</h4><span class="bc-chip">${esc(s.department)} · ${esc(s.priority)}</span></header>
+      <p class="lbl" style="margin:4px 0 0">${esc(s.reason)}</p>
+      <div class="bc-funnel"><b>${n(f.craft_people)}</b> people credited as ${esc(s.category.replace(/_/g,' '))}
+        → <b>${n(f.genre_people)}</b> with matching genre credits
+        → <b>${n(f.threshold_people)}</b> past the rating, vote and year floors
+        → <b>${n(f.shortlist_people)}</b> with enough matching credits
+        → <b>${n(f.scored_pool)}</b> scored → <b>${f.shown}</b> shown · ${f.ms} ms</div>
+      ${cands}</article>`;
+  }).join('');
+
+  const chem = c.chemistry.length ? `
+    <h4 style="margin-top:20px">Crew chemistry — who has already worked together</h4>
+    <ul class="prod-list bc-chem">${c.chemistry.map(e => `<li><b>${esc(e.a_name)}</b> (${esc(e.a_role)})
+      and <b>${esc(e.b_name)}</b> (${esc(e.b_role)}) — ${e.films_together} shared credit(s):
+      ${esc(e.shared_titles.slice(0,3).join(' · '))}</li>`).join('')}</ul>
+    <p class="lbl">Shared titles among the top pick for each role. A production hires units, not individuals.</p>`
+    : `<p class="lbl" style="margin-top:18px">None of the leading picks share a credit yet — this crew would be working together for the first time.</p>`;
+
+  const relaxed = (c.engine.relaxations || []).length
+    ? `<div class="bc-note"><h4>Filters relaxed to fill a role</h4><ul class="prod-list">
+       ${c.engine.relaxations.map(r => `<li>${esc(r)}</li>`).join('')}</ul>
+       <p class="lbl">Shown because a shortlist built on looser filters is not the shortlist you asked for.</p></div>`
+    : '';
+
+  out.innerHTML = `
+    <div class="prod-cards">
+      <div class="prod-card"><b>${c.slates.length}</b><span>roles staffed from credits</span></div>
+      <div class="prod-card"><b>${c.unstaffable.length}</b><span>roles flagged, not in dataset</span></div>
+      <div class="prod-card"><b>${c.engine.clickhouse_queries}</b><span>ClickHouse queries</span></div>
+      <div class="prod-card"><b>${c.chemistry.length}</b><span>existing crew connections</span></div>
+    </div>
+    ${relaxed}${slates}${chem}
+    <div class="bc-note" style="border-style:solid;border-color:var(--rule-faint)">
+      <h4>What this shortlist does not know</h4>
+      <ul class="prod-list">
+        <li>Availability — no schedule, holds or conflicts are in IMDb credit data.</li>
+        <li>Location and travel — where anyone is based, and who would need to be flown.</li>
+        <li>Rate — nothing here implies a quote, a fee band, or willingness to work at this budget.</li>
+        <li>Ranking reflects credited output only. It is a research shortlist, not a hiring decision.</li>
+      </ul>
+    </div>`;
+
+  out.querySelectorAll('.bc-why').forEach(b => b.addEventListener('click', () => {
+    const body = b.nextElementSibling, open = body.hidden;
+    body.hidden = !open;
+    b.setAttribute('aria-expanded', String(open));
+    b.textContent = open ? 'Hide the arithmetic' : 'Explain this recommendation';
+  }));
+  out.querySelectorAll('.bc-name').forEach(b =>
+    b.addEventListener('click', () => openProfile(b.dataset.nconst)));
+}
+
 /* ------------------------------------------------------ production workspace */
 $('#p-plan').addEventListener('click', async () => {
   const button = $('#p-plan'); button.disabled = true;
@@ -629,11 +759,27 @@ $('#p-plan').addEventListener('click', async () => {
       <div class="prod-card"><b>${money(p.summary.total_budget)}</b><span>planning budget</span></div>
       <div class="prod-card"><b>${money(p.summary.budget_per_shoot_day)}</b><span>budget / shoot day</span></div>
     </div><div class="prod-cols"><div><h4>Production footprint</h4><ul class="prod-list"><li>${p.summary.location_count} locations</li><li>${p.summary.exterior_scenes} exterior scenes</li><li>${p.summary.night_scenes} night/twilight scenes</li></ul></div><div><h4>Plan status</h4><p class="lbl">Draft · human review required before this becomes a production baseline.</p></div></div></section>
+      <section class="plan-page" data-plan="crew" hidden>
+        <h4>What this screenplay needs</h4>
+        <p class="lbl">Read from the scenes themselves: ${esc((p.brief.genres||[]).join(', ')||'no genre signal')} · ${esc(p.brief.tone)}
+           · ${p.brief.scene_count} scenes across ${p.brief.location_count} location(s). Source: ${esc(p.brief.source)}.</p>
+        <div class="prod-cols"><div><h4>Staffable from IMDb credits</h4><ul class="prod-list">
+          ${p.roles.filter(r=>r.staffable).map(r=>`<li><b>${esc(r.role)}</b> · ${esc(r.department)} <span class="bc-chip">${esc(r.priority)}</span><br><span class="lbl">${esc(r.reason)}</span></li>`).join('')}
+        </ul></div><div><h4>Required, not in this dataset</h4><ul class="prod-list">
+          ${p.roles.filter(r=>!r.in_corpus).map(r=>`<li><b>${esc(r.role)}</b> · ${esc(r.department)}<br><span class="lbl">${esc(r.reason)}</span></li>`).join('')}
+        </ul>
+        ${p.roles.filter(r=>r.in_corpus && !r.staffable).map(r=>`<p class="lbl">${esc(r.role)} is covered by the dataset but not staffed here — ${esc(r.reason)}</p>`).join('')}
+        </div></div>
+        <div class="row" style="margin-top:14px"><button class="go" id="c-build">Build my crew</button>
+          <span class="lbl" id="c-status"></span></div>
+        <div id="crew-out"></div>
+      </section>
       <section class="plan-page" data-plan="schedule" hidden><h4>Stripboard draft</h4><ol class="prod-list">${p.schedule.map(d=>`<li><b>Day ${d.day}</b> · scenes ${d.scene_numbers.join(', ')} · ${esc(d.location)} · ${esc(d.time_of_day)} · ${d.estimated_pages} pages${d.warning?`<br><span style="color:var(--pink)">${esc(d.warning)}</span>`:''}</li>`).join('')}</ol></section>
       <section class="plan-page" data-plan="budget" hidden><h4>Top-sheet allowances</h4><ul class="prod-list">${p.budget.map(b=>`<li>${esc(b.category)} — <b>${money(b.amount)}</b> (${b.percent}%)<br><span class="lbl">${esc(b.basis)}</span></li>`).join('')}</ul><p class="lbl">Total: ${money(p.budget.reduce((n,b)=>n+b.amount,0))}. Planning allowances only.</p></section>
       <section class="plan-page" data-plan="scenes" hidden><h4>Scene breakdown</h4><ol class="prod-list">${p.scenes.map(s=>`<li><b>${esc(s.heading)}</b> · ${s.estimated_pages} pages<br><span class="lbl">${esc(s.interior_exterior)} · ${esc(s.location)} · ${esc(s.time_of_day)}${s.requirements.length?' · '+esc(s.requirements.join(' · ')):''}</span></li>`).join('')}</ol></section>
       <section class="plan-page" data-plan="risks" hidden><h4>Risks requiring review</h4><ul class="prod-list">${p.risks.map(r=>`<li><b>${esc(r.severity.toUpperCase())} · ${esc(r.area)}</b> — ${esc(r.issue)}<br>${esc(r.mitigation)}</li>`).join('')||'<li>No automatic signals; human review still required.</li>'}</ul><h4>Planning assumptions</h4><ul class="prod-list">${p.assumptions.map(a=>`<li>${esc(a)}</li>`).join('')}</ul></section>`;
     showPlanPage('overview');
+    $('#c-build').addEventListener('click', buildCrew);
   } catch(err) { $('#p-out').innerHTML=`<div class="msg bad"><b>Production plan unavailable.</b>${esc(err.message)}</div>`; }
   finally { button.disabled=false; $('#p-status').textContent=''; }
 });

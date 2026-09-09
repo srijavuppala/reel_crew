@@ -4,6 +4,7 @@ import math
 import re
 from collections import defaultdict
 
+from .roles import derive_roles, infer_brief
 from .schema import (
     BudgetLine, ChangeImpact, ProductionPlan, ProductionPlanRequest, Risk, Scene, ShootDay,
 )
@@ -145,6 +146,7 @@ def plan_production(req: ProductionPlanRequest) -> ProductionPlan:
                           actions=actions)
     return ProductionPlan(
         title=req.title, currency=req.currency.upper(), scenes=scenes, schedule=schedule,
+        brief=infer_brief(req.screenplay, scenes), roles=derive_roles(scenes),
         budget=budget, risks=assess_risks(scenes, schedule, req.total_budget, req.target_shoot_days),
         assumptions=[
             "Budget lines are planning allowances, not bids, commitments, actuals, or payment instructions.",

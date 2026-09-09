@@ -57,6 +57,8 @@ class ChangeImpact(BaseModel):
 class ProductionPlan(BaseModel):
     title: str
     currency: str
+    brief: "ProductionBrief | None" = None
+    roles: list["RoleRequirement"] = Field(default_factory=list)
     summary: dict
     scenes: list[Scene]
     schedule: list[ShootDay]
@@ -64,3 +66,82 @@ class ProductionPlan(BaseModel):
     risks: list[Risk]
     assumptions: list[str]
     change_impact: ChangeImpact
+
+
+class RoleRequirement(BaseModel):
+    """One crew position the screenplay demands.
+
+    `staffable` is the honest half: it is False for every department IMDb's
+    principal-crew data does not cover, and those roles are still reported.
+    """
+    role: str
+    category: str | None = None          # IMDb `category` when the corpus covers it
+    department: str
+    priority: str                        # core | recommended | required | attached
+    reason: str
+    scene_numbers: list[int] = Field(default_factory=list)
+    in_corpus: bool = True     # IMDb's principal-crew data covers this craft
+    staffable: bool            # ...and we will actually build a slate for it
+
+
+class ProductionBrief(BaseModel):
+    genres: list[str]
+    tone: str
+    scene_count: int
+    location_count: int
+    source: str
+
+
+class ScoreComponent(BaseModel):
+    label: str
+    points: float
+    max_points: float
+    basis: str
+
+
+class CrewCandidate(BaseModel):
+    nconst: str
+    name: str
+    match_score: float
+    components: list[ScoreComponent]
+    credits: int
+    genre_credits: int
+    avg_rating: float
+    reach: int
+    most_recent: int
+    sample_titles: list[str]
+    evidence: str
+
+
+class RoleFunnel(BaseModel):
+    """The ClickHouse narrowing behind one role, stage by stage."""
+    craft_people: int
+    genre_people: int
+    threshold_people: int
+    shortlist_people: int
+    scored_pool: int = 0                 # rows scored before the top N were taken
+    shown: int
+    sql: str
+    ms: int
+
+
+class RoleSlate(BaseModel):
+    role: str
+    category: str
+    department: str
+    priority: str
+    reason: str
+    candidates: list[CrewCandidate]
+    funnel: RoleFunnel
+
+
+class CrewPlan(BaseModel):
+    title: str
+    brief: ProductionBrief
+    slates: list[RoleSlate]
+    unstaffable: list[RoleRequirement]
+    chemistry: list[dict] = Field(default_factory=list)
+    engine: dict = Field(default_factory=dict)
+
+
+ProductionPlan.model_rebuild()

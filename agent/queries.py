@@ -149,6 +149,59 @@ LIMIT {limit:UInt8}
 """
 
 
+# ------------------------------------------------------------ Q5: role funnel
+# The "explain this recommendation" surface. Four counts, one per narrowing
+# stage, so a producer can see the shortlist was cut out of the whole corpus by
+# stated filters rather than chosen by a model.
+Q5_FUNNEL = """
+SELECT
+    (SELECT uniqExact(nconst) FROM crew_credits
+      WHERE category = {role:String})                                AS craft_people,
+    (SELECT uniqExact(nconst) FROM crew_credits
+      WHERE category = {role:String}
+        AND (empty({genres:Array(String)})
+             OR hasAny(genres, {genres:Array(String)})))             AS genre_people,
+    (SELECT uniqExact(nconst) FROM crew_credits
+      WHERE category = {role:String}
+        AND (empty({genres:Array(String)})
+             OR hasAny(genres, {genres:Array(String)}))
+        AND year   >= {year_from:UInt16}
+        AND rating >= {min_rating:Float32}
+        AND votes  >= {min_votes:UInt32})                            AS threshold_people,
+    (SELECT count() FROM (
+        SELECT nconst FROM crew_credits
+         WHERE category = {role:String}
+           AND year   >= {year_from:UInt16}
+           AND rating >= {min_rating:Float32}
+           AND votes  >= {min_votes:UInt32}
+         GROUP BY nconst
+        HAVING countIf(empty({genres:Array(String)})
+                       OR hasAny(genres, {genres:Array(String)}))
+               >= {min_credits:UInt8}))                              AS shortlist_people
+"""
+
+
+# --------------------------------------------------------- Q6: crew chemistry
+# Do the people we just assembled already work together? Pairwise shared titles
+# across the selected crew. a.nconst < b.nconst keeps each pair once.
+Q6_CHEMISTRY = """
+SELECT
+    a.nconst                                   AS a_nconst,
+    any(a.name)                                AS a_name,
+    b.nconst                                   AS b_nconst,
+    any(b.name)                                AS b_name,
+    uniqExact(a.tconst)                        AS films_together,
+    arraySlice(groupUniqArray(a.title), 1, 3)  AS shared_titles
+FROM crew_credits AS a
+INNER JOIN crew_credits AS b ON a.tconst = b.tconst
+WHERE a.nconst IN {picks:Array(String)}
+  AND b.nconst IN {picks:Array(String)}
+  AND a.nconst < b.nconst
+GROUP BY a.nconst, b.nconst
+ORDER BY films_together DESC, a_name ASC
+"""
+
+
 def _run(sql: str, params: dict[str, Any]) -> tuple[list[dict], float, str]:
     """Execute a parameterized query; return rows, elapsed ms, and the SQL text."""
     rendered = render_query(sql, params)
@@ -168,8 +221,24 @@ def search_crew(role: str, genres: list[str], min_rating: float, year_from: int,
     })
 
 
+def role_funnel(role: str, genres: list[str], min_rating: float, year_from: int,
+                min_credits: int, min_votes: int = 1000):
+    return _run(Q5_FUNNEL, {
+        "role": role, "genres": genres or [], "min_rating": float(min_rating),
+        "year_from": int(year_from), "min_credits": int(min_credits),
+        "min_votes": int(min_votes),
+    })
+
+
 def get_collaborators(nconst: str, limit: int = 10):
     return _run(Q2_COLLABORATORS, {"nconst": nconst, "limit": int(limit)})
+
+
+def crew_chemistry(picks: list[str]):
+    """Shared-credit edges among an assembled crew. Empty list -> no query."""
+    if len(picks) < 2:
+        return [], 0.0, Q6_CHEMISTRY.strip()
+    return _run(Q6_CHEMISTRY, {"picks": picks})
 
 
 def get_profile(nconst: str):
