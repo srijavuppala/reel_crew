@@ -6,3 +6,7 @@ pydantic==2.13.5
 python-dotenv==1.2.3
 google-adk==2.8.0
 google-genai==2.22.0
+google-cloud-firestore==2.21.0
+# Keep Firestore telemetry compatible with google-adk 2.8's OpenTelemetry ceiling.
+google-api-core<2.30
+opentelemetry-api==1.42.1

@@ -402,6 +402,7 @@ button.go{background:var(--ink);border-radius:9px}.brief-block button.go:after{c
 .listhead h2{font-size:28px}table{box-shadow:0 12px 34px rgba(25,25,29,.045)}
 .roster-panel{background:var(--paper);border:1px solid var(--rule-faint);border-radius:18px;box-shadow:0 18px 50px rgba(25,25,29,.055);overflow:hidden}
 .shortlist-panel{padding:22px 24px;border-bottom:1px solid var(--rule-faint);background:#FAFAF8}.shortlist-head{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:12px}.shortlist-head b{display:block;font-size:18px}.shortlist-head span{font-size:12px;color:var(--ink-soft)}.shortlist-item{display:grid;grid-template-columns:minmax(180px,1.5fr) 1fr auto;gap:14px;align-items:center;padding:12px 0;border-top:1px solid var(--rule-faint)}.shortlist-person{border:0;background:transparent;text-align:left;color:var(--ink);font:inherit;cursor:pointer;padding:0}.shortlist-person b{display:block}.shortlist-person span{display:block;font-size:12px;color:var(--ink-soft)}.shortlist-evidence{font-size:12px;color:var(--ink-soft)}.shortlist-empty{font-size:13px;color:var(--ink-soft);padding:10px 0}.shortlist-action{border:1px solid var(--rule);border-radius:8px;background:var(--paper);padding:8px 10px;font:600 12px var(--sans);cursor:pointer;color:var(--ink)}.shortlist-action:hover{border-color:var(--focus);color:var(--focus)}.shortlist-action:disabled{cursor:default;color:var(--ink-soft);background:#F1F1EE}
+.project-sync{align-items:end;padding:12px 0;border-top:1px solid var(--rule-faint);margin-top:14px}.project-sync label{font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase}.project-sync input,.ops-form input,.ops-form select{display:block;margin-top:5px;padding:9px 10px;border:1px solid var(--rule);border-radius:8px;background:var(--paper);font:14px var(--sans)}.ops-form{display:flex;flex-wrap:wrap;gap:12px;align-items:end;padding:16px;background:#FAFAF8;border:1px solid var(--rule-faint);border-radius:12px}.decision-card{padding:18px;border:1px solid var(--rule);border-radius:12px;margin-top:14px}.decision-card[data-status="approved"]{border-color:#56846a;background:#f2f8f3}.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.compare-grid>div{padding:15px;background:#FAFAF8;border-radius:10px}.chem-graph{width:100%;height:260px;border:1px solid var(--rule-faint);border-radius:12px;background:#FAFAF8}.finance-table{width:100%;border-collapse:collapse}.finance-table input{width:110px;padding:7px;border:1px solid var(--rule);border-radius:6px}.ops-log{display:grid;gap:8px}.ops-event{padding:10px 12px;border-left:3px solid var(--focus);background:#FAFAF8}
 .roster-form{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:24px;border-bottom:1px solid var(--rule-faint)}
 .roster-form-head{grid-column:1/-1}.roster-form-head b{display:block;font-size:18px}.roster-form-head span{display:block;color:var(--ink-soft);font-size:13px;margin-top:2px}
 .roster-form label{font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em}.roster-form input,.roster-form select{display:block;width:100%;margin-top:6px;padding:10px 11px;border:1px solid var(--rule);border-radius:9px;background:#FAFAF8;color:var(--ink);font:14px var(--sans)}
@@ -517,6 +518,7 @@ Maya drives the car through rain as two passengers run after her.
 INT. DINER - DAY
 Customers watch Maya confront JOHN. They fight near the kitchen fire.</textarea>
       <div class="row"><button class="go" id="p-plan">Build production plan</button><span class="lbl" id="p-status"></span></div>
+      <div class="row project-sync"><label>Shared project ID<input id="p-project-id" value="night-run" aria-label="Shared project ID"></label><button class="ghost" id="p-save" type="button">Save shared project</button><button class="ghost" id="p-load" type="button">Load project</button><span class="lbl" id="p-sync-status"></span></div>
       <nav class="plan-nav" id="plan-nav" aria-label="Production plan pages" hidden>
         <button data-plan-page="overview" aria-selected="true">Overview</button>
         <button data-plan-page="crew" aria-selected="false">Crew</button>
@@ -524,6 +526,8 @@ Customers watch Maya confront JOHN. They fight near the kitchen fire.</textarea>
         <button data-plan-page="budget" aria-selected="false">Budget</button>
         <button data-plan-page="scenes" aria-selected="false">Scenes</button>
         <button data-plan-page="risks" aria-selected="false">Risks & assumptions</button>
+        <button data-plan-page="replan" aria-selected="false">Replan</button>
+        <button data-plan-page="package" aria-selected="false">Handoff</button>
       </nav>
       <div id="p-out"><p class="plan-empty">Build a plan to open the production pages.</p></div>
     </div>
@@ -605,6 +609,30 @@ let SAVED_SHORTLIST = [];
 try { SAVED_SHORTLIST = JSON.parse(localStorage.getItem('reel-crew-shortlist') || '[]'); } catch (_) { SAVED_SHORTLIST = []; }
 const PINNED = new Map(SAVED_SHORTLIST.filter(c => c.nconst).map(c => [c.nconst, c]));
 let PRODUCTION_PLAN = null;
+let REPLAN_PROPOSAL = null;
+let AVAILABILITY = [];
+let APPROVALS = [];
+let OPERATIONS = [];
+
+function projectPayload(){
+  return {title:$('#p-title').value,plan:PRODUCTION_PLAN||{},shortlist:[...PINNED.values()],roster:ROSTER||[],finance:(PRODUCTION_PLAN?.budget||[]).map(b=>({category:b.category,estimate:b.amount,committed:b.committed||0,actual:b.actual||0})),availability:AVAILABILITY,approvals:APPROVALS,operations:OPERATIONS};
+}
+async function syncProject(method){
+  const id=$('#p-project-id').value.trim().toLowerCase().replace(/[^a-z0-9-]/g,'-');
+  if(!id) return;
+  $('#p-sync-status').textContent=method==='PUT'?'Saving…':'Loading…';
+  try{
+    const response=await fetch(API+'/api/projects/'+id,{method,headers:{'Content-Type':'application/json'},body:method==='PUT'?JSON.stringify(projectPayload()):undefined});
+    if(!response.ok) throw new Error((await response.json()).detail||response.statusText);
+    const d=await response.json();
+    if(method==='GET'){
+      ROSTER=d.roster||[]; AVAILABILITY=d.availability||[]; APPROVALS=d.approvals||[]; OPERATIONS=d.operations||[];
+      (d.shortlist||[]).forEach(c=>PINNED.set(c.nconst,c));
+      saveRoster(); saveShortlist();
+    }
+    $('#p-sync-status').textContent=`${method==='PUT'?'Saved':'Loaded'} · ${d.storage||'shared'} · ${new Date(d.updated_at).toLocaleTimeString()}`;
+  }catch(err){ $('#p-sync-status').textContent=err.message; }
+}
 
 function showWorkspace(page, updateHash=true){
   const selected = ['crew','roster','production'].includes(page) ? page : 'crew';
@@ -623,6 +651,8 @@ $('#plan-nav').addEventListener('click', e => {
   const b=e.target.closest('[data-plan-page]'); if (b) showPlanPage(b.dataset.planPage);
 });
 showWorkspace(['#production','#roster'].includes(location.hash) ? location.hash.slice(1) : 'crew', false);
+$('#p-save').addEventListener('click',()=>syncProject('PUT'));
+$('#p-load').addEventListener('click',()=>syncProject('GET'));
 
 /* ------------------------------------------------------------ real crew roster */
 let ROSTER = [];
@@ -737,6 +767,7 @@ function renderCrew(c, out){
 
   const chem = c.chemistry.length ? `
     <h4 style="margin-top:20px">Crew chemistry — who has already worked together</h4>
+    <svg class="chem-graph" viewBox="0 0 760 260" role="img" aria-label="Crew collaboration graph">${c.chemistry.map((e,i)=>{const y=35+(i%5)*45,x1=130+(i%2)*70,x2=560-(i%2)*70;return `<line x1="${x1}" y1="${y}" x2="${x2}" y2="${y}" stroke="#b8b8b3" stroke-width="${Math.min(8,1+e.films_together)}"/><circle cx="${x1}" cy="${y}" r="8" fill="#183153"/><circle cx="${x2}" cy="${y}" r="8" fill="#b34f72"/><text x="${x1+14}" y="${y+4}" font-size="11">${esc(e.a_name)}</text><text x="${x2-14}" y="${y+4}" text-anchor="end" font-size="11">${esc(e.b_name)}</text>`}).join('')}</svg>
     <ul class="prod-list bc-chem">${c.chemistry.map(e => `<li><b>${esc(e.a_name)}</b> (${esc(e.a_role)})
       and <b>${esc(e.b_name)}</b> (${esc(e.b_role)}) — ${e.films_together} shared credit(s):
       ${esc(e.shared_titles.slice(0,3).join(' · '))}</li>`).join('')}</ul>
@@ -778,6 +809,29 @@ function renderCrew(c, out){
 }
 
 /* ------------------------------------------------------ production workspace */
+function wireProductionOperations(p,money){
+  const renderAvailability=()=>{
+    $('#av-list').innerHTML=AVAILABILITY.length?`<ul class="prod-list">${AVAILABILITY.map(a=>`<li><b>Conflict · Day ${a.day}</b> — ${esc(a.name)} unavailable</li>`).join('')}</ul>`:'<p class="lbl">No availability conflicts entered.</p>';
+    document.querySelectorAll('[data-shoot-day]').forEach(row=>{const names=AVAILABILITY.filter(a=>+a.day===+row.dataset.shootDay).map(a=>a.name);if(names.length)row.insertAdjacentHTML('beforeend',`<br><b style="color:var(--pink)">Conflict: ${esc(names.join(', '))} unavailable</b>`);});
+  };
+  renderAvailability();
+  $('#av-add').addEventListener('click',()=>{const name=$('#av-name').value.trim();if(!name)return;AVAILABILITY.push({name,day:+$('#av-day').value,created_at:new Date().toISOString()});OPERATIONS.unshift({type:'availability.conflict',detail:`${name} unavailable day ${$('#av-day').value}`,at:new Date().toISOString()});renderAvailability();});
+  $('#call-approve').addEventListener('click',e=>{APPROVALS.push({type:'call_sheet',status:'approved',by:'Producer',at:new Date().toISOString()});e.target.textContent='Call sheet revision approved';e.target.disabled=true;});
+  document.querySelectorAll('[data-finance]').forEach(input=>input.addEventListener('input',()=>{const i=+input.dataset.i,b=p.budget[i];b.committed=+document.querySelector(`[data-finance="committed"][data-i="${i}"]`).value||0;b.actual=+document.querySelector(`[data-finance="actual"][data-i="${i}"]`).value||0;$('#variance-'+i).textContent=money(b.amount-b.actual);}));
+  $('#rp-kind').addEventListener('change',e=>{$('#rp-value').value=e.target.value==='budget'?Math.round(p.summary.total_budget*.8):e.target.value==='shoot_days'?Math.max(1,p.summary.target_shoot_days-1):'Lead performer';});
+  $('#rp-build').addEventListener('click',async()=>{
+    const baseline={title:$('#p-title').value,screenplay:$('#p-script').value,total_budget:+$('#p-budget').value,currency:$('#p-currency').value,target_shoot_days:+$('#p-days').value};
+    const response=await fetch(API+'/api/production/replan',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({baseline,change:{kind:$('#rp-kind').value,value:$('#rp-value').value,reason:$('#rp-reason').value}})});
+    const r=REPLAN_PROPOSAL=await response.json();if(!response.ok){$('#rp-out').innerHTML=`<div class="msg bad">${esc(r.detail)}</div>`;return;}
+    $('#rp-out').innerHTML=`<div class="decision-card" data-status="proposed"><div class="compare-grid"><div><span class="page-kicker">Approved baseline</span><h4>${money(r.before.summary.total_budget)} · ${r.before.summary.target_shoot_days} days</h4></div><div><span class="page-kicker">Proposed revision</span><h4>${money(r.after.summary.total_budget)} · ${r.after.summary.target_shoot_days} days</h4></div></div><ul class="prod-list">${r.impacts.map(x=>`<li>${esc(x)}</li>`).join('')}</ul><div class="row"><button class="go" id="rp-approve">Approve revised baseline</button><button class="ghost" id="rp-reject">Reject</button></div></div>`;
+    $('#rp-approve').addEventListener('click',()=>{r.status='approved';APPROVALS.push({type:'replan',proposal_id:r.proposal_id,status:'approved',by:'Producer',at:new Date().toISOString()});PRODUCTION_PLAN=r.after;$('#rp-out .decision-card').dataset.status='approved';$('#rp-out .row').innerHTML='<b>Approved by Producer · revised baseline active</b>';});
+    $('#rp-reject').addEventListener('click',()=>{r.status='rejected';APPROVALS.push({type:'replan',proposal_id:r.proposal_id,status:'rejected',by:'Producer',at:new Date().toISOString()});$('#rp-out .row').innerHTML='<b>Rejected · original baseline preserved</b>';});
+  });
+  const renderOps=()=>{$('#ops-log').innerHTML=OPERATIONS.length?OPERATIONS.map(o=>`<div class="ops-event"><b>${esc(o.type)}</b><br><span class="lbl">${esc(o.detail)} · ${new Date(o.at).toLocaleString()}</span></div>`).join(''):'<p class="lbl">No daily production events logged yet.</p>';};renderOps();
+  $('#ops-log-event').addEventListener('click',()=>{OPERATIONS.unshift({type:'daily.progress',detail:`${p.summary.estimated_pages} planned pages · ${p.summary.planned_shoot_days} shoot days tracked`,at:new Date().toISOString()});renderOps();});
+  $('#package-export').addEventListener('click',()=>{const data={exported_at:new Date().toISOString(),project:projectPayload(),replan:REPLAN_PROPOSAL,crew_plan:CREW_PLAN};const url=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download=`${$('#p-project-id').value||'reel-crew'}-production-package.json`;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+}
+
 $('#p-plan').addEventListener('click', async () => {
   const button = $('#p-plan'); button.disabled = true;
   $('#p-status').textContent = 'Breaking down scenes, schedule, budget, and risk…';
@@ -818,13 +872,16 @@ $('#p-plan').addEventListener('click', async () => {
           <span class="lbl" id="c-status"></span></div>
         <div id="crew-out"></div>
       </section>
-      <section class="plan-page" data-plan="schedule" hidden><h4>Stripboard draft</h4><ol class="prod-list">${p.schedule.map(d=>`<li><b>Day ${d.day}</b> · scenes ${d.scene_numbers.join(', ')} · ${esc(d.location)} · ${esc(d.time_of_day)} · ${d.estimated_pages} pages${d.warning?`<br><span style="color:var(--pink)">${esc(d.warning)}</span>`:''}</li>`).join('')}</ol></section>
-      <section class="plan-page" data-plan="budget" hidden><h4>Top-sheet allowances</h4><ul class="prod-list">${p.budget.map(b=>`<li>${esc(b.category)} — <b>${money(b.amount)}</b> (${b.percent}%)<br><span class="lbl">${esc(b.basis)}</span></li>`).join('')}</ul><p class="lbl">Total: ${money(p.budget.reduce((n,b)=>n+b.amount,0))}. Planning allowances only.</p></section>
+      <section class="plan-page" data-plan="schedule" hidden><h4>Availability-aware stripboard</h4><div class="ops-form"><label>Person<input id="av-name" placeholder="Crew or cast name"></label><label>Unavailable day<input id="av-day" type="number" min="1" value="1"></label><button class="ghost" id="av-add">Add conflict</button><button class="go" id="call-approve">Approve call sheet revision</button></div><div id="av-list"></div><ol class="prod-list">${p.schedule.map(d=>`<li data-shoot-day="${d.day}"><b>Day ${d.day}</b> · scenes ${d.scene_numbers.join(', ')} · ${esc(d.location)} · ${esc(d.time_of_day)} · ${d.estimated_pages} pages${d.warning?`<br><span style="color:var(--pink)">${esc(d.warning)}</span>`:''}</li>`).join('')}</ol><p class="lbl">Conflicts are warnings until an authorized producer or AD approves a revision.</p></section>
+      <section class="plan-page" data-plan="budget" hidden><h4>Estimate → committed → actual</h4><table class="finance-table"><thead><tr><th>Category</th><th>Estimate</th><th>Committed</th><th>Actual</th><th>Variance</th></tr></thead><tbody>${p.budget.map((b,i)=>`<tr><td>${esc(b.category)}</td><td>${money(b.amount)}</td><td><input data-finance="committed" data-i="${i}" type="number" min="0" value="0"></td><td><input data-finance="actual" data-i="${i}" type="number" min="0" value="0"></td><td id="variance-${i}">${money(b.amount)}</td></tr>`).join('')}</tbody></table><p class="lbl">Estimates are planning allowances. Commitments and actuals are entered by authorized production users; Reel Crew never initiates payments.</p></section>
       <section class="plan-page" data-plan="scenes" hidden><h4>Scene breakdown</h4><ol class="prod-list">${p.scenes.map(s=>`<li><b>${esc(s.heading)}</b> · ${s.estimated_pages} pages<br><span class="lbl">${esc(s.interior_exterior)} · ${esc(s.location)} · ${esc(s.time_of_day)}${s.requirements.length?' · '+esc(s.requirements.join(' · ')):''}</span></li>`).join('')}</ol></section>
-      <section class="plan-page" data-plan="risks" hidden><h4>Risks requiring review</h4><ul class="prod-list">${p.risks.map(r=>`<li><b>${esc(r.severity.toUpperCase())} · ${esc(r.area)}</b> — ${esc(r.issue)}<br>${esc(r.mitigation)}</li>`).join('')||'<li>No automatic signals; human review still required.</li>'}</ul><h4>Planning assumptions</h4><ul class="prod-list">${p.assumptions.map(a=>`<li>${esc(a)}</li>`).join('')}</ul></section>`;
+      <section class="plan-page" data-plan="risks" hidden><h4>Risks requiring review</h4><ul class="prod-list">${p.risks.map(r=>`<li><b>${esc(r.severity.toUpperCase())} · ${esc(r.area)}</b> — ${esc(r.issue)}<br>${esc(r.mitigation)}</li>`).join('')||'<li>No automatic signals; human review still required.</li>'}</ul><h4>Planning assumptions</h4><ul class="prod-list">${p.assumptions.map(a=>`<li>${esc(a)}</li>`).join('')}</ul></section>
+      <section class="plan-page" data-plan="replan" hidden><h4>Constraint change proposal</h4><p class="lbl">Create a reversible proposal. The approved baseline remains unchanged until a producer accepts it.</p><div class="ops-form"><label>Constraint<select id="rp-kind"><option value="budget">Budget</option><option value="shoot_days">Shoot days</option><option value="crew_unavailable">Crew unavailable</option></select></label><label>New value or crew name<input id="rp-value" value="400000"></label><label>Reason<input id="rp-reason" value="Financing reduced"></label><button class="go" id="rp-build">Compare plans</button></div><div id="rp-out"></div></section>
+      <section class="plan-page" data-plan="package" hidden><h4>Production handoff</h4><p class="lbl">Export the current plan, working roster, shortlist, finance entries, availability conflicts, approvals, and operating log as one traceable JSON package.</p><div class="row"><button class="go" id="package-export">Export production package</button><button class="ghost" id="ops-log-event">Log today’s progress</button></div><div class="ops-log" id="ops-log"></div></section>`;
     showPlanPage('overview');
     $('#c-build').addEventListener('click', buildCrew);
     $('#overview-crew').addEventListener('click', () => showPlanPage('crew'));
+    wireProductionOperations(p, money);
   } catch(err) { $('#p-out').innerHTML=`<div class="msg bad"><b>Production plan unavailable.</b>${esc(err.message)}</div>`; }
   finally { button.disabled=false; $('#p-status').textContent=''; }
 });

@@ -21,33 +21,45 @@ behind each slate, stage by stage. Q6 reports which of the assembled crew alread
 
 Completed September 9, 2026. The overview now connects project KPIs, crew coverage, schedule, budget, risks, and a six-stage agent workflow in one producer decision surface.
 
-## Phase 5 — Replanning and optimization
+## Phase 5 — Replanning and optimization ✓
 
-Implement one high-quality constraint-change demo, producer approval, and before/after plan comparison.
+Completed September 9, 2026. Budget, shoot-day, and crew-unavailable events produce a reversible
+before/after proposal; the approved baseline changes only after an explicit producer decision.
 
-## Phase 6 — Crew chemistry and handoff
+## Phase 6 — Crew chemistry and handoff ✓
 
-Visualize shared-credit relationships and export a complete production package.
+Completed September 9, 2026. Shared-credit relationships render as a crew network and the handoff
+exports plan, roster, shortlist, finance, availability, approvals, operating events, and evidence.
 
-## Phase 7 — Shared projects, finance, and approvals
+## Phase 7 — Shared projects, finance, and approvals ✓
 
 Move project, shortlist, roster, budget, and approval records out of browser-only storage into a
 transactional database. Add project accounts, estimate/committed/actual budget states, variance,
 CSV import/export, approval history, and an audit trail. ClickHouse remains the analytics and
 credit-search store; no payment or hiring decision is autonomous.
 
-## Phase 8 — Scheduling, availability, and call sheets
+Completed September 9, 2026. Shared Cloud Run records use Firestore with delete protection; local
+development uses SQLite. Project saves create audit events, and finance separates estimate,
+committed, actual, and variance.
+
+## Phase 8 — Scheduling, availability, and call sheets ✓
 
 Add an availability-aware stripboard, cast and crew conflict detection, location and turnaround
 constraints, and versioned call sheets. Every schedule revision requires human approval and shows
 the people, locations, requirements, and estimated cost affected by the change.
 
-## Phase 9 — Production operations and submission readiness
+Completed September 9, 2026 (demo scope). Availability conflicts are attached to shoot days and
+call-sheet revisions require an explicit producer approval. Drag/drop optimization remains future depth.
+
+## Phase 9 — Production operations and submission readiness ◑
 
 Connect daily progress, pages shot, schedule drift, cost variance, department views, open approvals,
 and post-production delivery milestones to the shared production record. Complete end-to-end QA,
 record the public English demo, verify repository metadata and license display, and submit the
 stable Cloud Run build with buffer.
+
+In progress. Daily production events and handoff data are implemented. Final live QA, repository
+metadata review, demo recording, and Devpost submission remain.
 
 ## Language and credibility applied across phases
 

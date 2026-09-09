@@ -1,6 +1,7 @@
 import unittest
 
 from production.planner import plan_production
+from production.operations import ConstraintChange, ReplanRequest, propose_replan
 from production.schema import ProductionPlanRequest
 
 
@@ -35,6 +36,20 @@ class ProductionPlannerTests(unittest.TestCase):
         ))
         self.assertEqual(len(plan.scenes), 1)
         self.assertEqual(plan.schedule[0].scene_numbers, [1])
+
+    def test_replan_is_a_proposal_and_preserves_baseline(self):
+        req = ProductionPlanRequest(
+            title="Night Run", screenplay=SCRIPT, total_budget=500_000, target_shoot_days=3,
+        )
+        proposal = propose_replan(ReplanRequest(
+            baseline=req,
+            change=ConstraintChange(kind="budget", value="400000", reason="Financing reduced"),
+        ))
+        self.assertEqual(proposal.status, "proposed")
+        self.assertTrue(proposal.approval_required)
+        self.assertEqual(proposal.before.summary["total_budget"], 500_000)
+        self.assertEqual(proposal.after.summary["total_budget"], 400_000)
+        self.assertTrue(any("No baseline" in item for item in proposal.impacts))
 
 
 if __name__ == "__main__":

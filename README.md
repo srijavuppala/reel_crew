@@ -211,3 +211,14 @@ Blaschke. They need the other three hundred.
 Credit data comes from [IMDb public datasets](https://datasets.imdbws.com), used under their
 **personal and non-commercial** licence. This project is a non-commercial demonstration.
 Code is MIT (see `LICENSE`); the IMDb data is not redistributed here.
+The production workspace also supports reversible constraint-change proposals, producer approvals,
+availability conflicts, call-sheet approval, estimate/committed/actual finance tracking, a visual
+crew collaboration graph, and a complete JSON handoff package. Shared Cloud Run projects are stored
+in Firestore; local development falls back to SQLite at `/tmp/reel-crew.db`.
+
+Shared project endpoints:
+
+- `PUT /api/projects/{project_id}` — save plan, shortlist, roster, finance, availability, approvals,
+  and operating events while appending an audit event.
+- `GET /api/projects/{project_id}` — retrieve the shared project and audit history.
+- `POST /api/production/replan` — produce a non-mutating before/after constraint proposal.

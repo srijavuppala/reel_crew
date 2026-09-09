@@ -79,12 +79,14 @@
 - [x] Phase 0 API, shared workspace UI, and built-in tests
 - [x] Phase 1: derive department briefs and connect them to Reel Crew search
 - [x] Attach discovery shortlists to the working roster on the current device
-- [ ] Phase 2: persistent shared projects, shortlists, and rosters (replace browser-only storage)
-- [ ] Phase 2: estimates, commitments, actuals, approvals, variance, and audit history
-- [ ] Phase 3: availability-aware stripboard, conflict detection, and approved call sheets
-- [ ] Phase 4: event-driven replanning, before/after comparison, and human approval
-- [ ] Phase 5: visual crew-chemistry graph and complete production-package export
-- [ ] Phase 6: daily production operations, department views, and post-production handoff
+- [x] Phase 2: persistent shared projects, shortlists, and rosters (Firestore on Cloud Run)
+- [x] Phase 2: estimates, commitments, actuals, approvals, variance, and audit history
+- [x] Phase 3 demo scope: availability conflicts and approved call-sheet revisions
+- [ ] Phase 3 depth: drag/drop stripboard and turnaround/location constraint solver
+- [x] Phase 4: event-driven replanning, before/after comparison, and human approval
+- [x] Phase 5: visual crew-chemistry graph and complete production-package export
+- [x] Phase 6 foundation: daily production event log and shared handoff record
+- [ ] Phase 6 depth: department-specific operational views and delivery milestones
 
 ## Blocked on you
 1. **Rotate the API key before this goes anywhere public** — it was shared in a chat transcript.

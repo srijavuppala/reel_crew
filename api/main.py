@@ -16,10 +16,13 @@ from agent.graph import run_workflow
 from agent.schema import CrewQuery, SearchResult
 from production.crew import build_crew
 from production.planner import break_down, plan_production
+from production.operations import ReplanRequest, propose_replan
 from production.roles import derive_roles, infer_brief
 from production.schema import CrewPlan, ProductionPlan, ProductionPlanRequest
+from production.store import ProjectStore
 
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
+PROJECTS = ProjectStore()
 
 app = FastAPI(
     title="Reel Crew",
@@ -53,6 +56,7 @@ def health():
         "gemini": "enabled" if GEMINI_ENABLED else "disabled (deterministic fallback active)",
         "gemini_backend": gemini_backend(),
         "gemini_model": GEMINI_MODEL if GEMINI_ENABLED else None,
+        "project_storage": PROJECTS.backend,
     }
 
 
@@ -81,6 +85,38 @@ async def search(req: SearchRequest):
 def production_plan(req: ProductionPlanRequest):
     """Screenplay + constraints -> deterministic schedule, top sheet, and risks."""
     return plan_production(req)
+
+
+@app.post("/api/production/replan")
+def production_replan(req: ReplanRequest):
+    """Create a before/after proposal without mutating the approved baseline."""
+    return propose_replan(req)
+
+
+class ProjectRecord(BaseModel):
+    title: str = Field(..., min_length=1, max_length=120)
+    plan: dict = Field(default_factory=dict)
+    shortlist: list[dict] = Field(default_factory=list)
+    roster: list[dict] = Field(default_factory=list)
+    finance: list[dict] = Field(default_factory=list)
+    availability: list[dict] = Field(default_factory=list)
+    approvals: list[dict] = Field(default_factory=list)
+    operations: list[dict] = Field(default_factory=list)
+
+
+@app.put("/api/projects/{project_id}")
+def save_project(project_id: str, record: ProjectRecord):
+    if not project_id.replace("-", "").isalnum():
+        raise HTTPException(status_code=400, detail="Invalid project id")
+    return PROJECTS.save(project_id, record.model_dump())
+
+
+@app.get("/api/projects/{project_id}")
+def get_project(project_id: str):
+    record = PROJECTS.get(project_id)
+    if not record:
+        raise HTTPException(status_code=404, detail="Project not found")
+    return {**record, "audit": PROJECTS.events(project_id)}
 
 
 class CrewPlanRequest(BaseModel):
