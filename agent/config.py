@@ -21,8 +21,45 @@ CH_SECURE = os.getenv("CLICKHOUSE_SECURE", "true").lower() == "true"
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "").strip()
 GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
 
+# Gemini Enterprise Agent Platform (Vertex AI) vs the AI Studio Gemini API.
+# Agent Platform express keys start with "AQ." and must go to aiplatform.googleapis.com;
+# AI Studio keys start with "AIza" and go to generativelanguage.googleapis.com.
+# Sending either to the other endpoint fails with a confusing 403, so detect it.
+_VERTEX_ENV = os.getenv("GOOGLE_GENAI_USE_VERTEXAI", "").strip().lower()
+USE_VERTEX = (_VERTEX_ENV in ("1", "true", "yes")
+              or (not _VERTEX_ENV and GOOGLE_API_KEY.startswith("AQ.")))
+
+GCP_PROJECT = os.getenv("GOOGLE_CLOUD_PROJECT", "").strip()
+GCP_LOCATION = os.getenv("GOOGLE_CLOUD_LOCATION", "global").strip() or "global"
+
 # The agent runs end to end without a key; Gemini upgrades parsing and narration.
-GEMINI_ENABLED = bool(GOOGLE_API_KEY)
+GEMINI_ENABLED = bool(GOOGLE_API_KEY) or (USE_VERTEX and bool(GCP_PROJECT))
+
+
+def gemini_backend() -> str:
+    """Human-readable name of the backend the LLM calls will use."""
+    if not GEMINI_ENABLED:
+        return "disabled"
+    if USE_VERTEX:
+        return "gemini-enterprise-agent-platform" + ("" if GOOGLE_API_KEY else " (ADC)")
+    return "ai-studio"
+
+
+def get_genai_client():
+    """Build a google-genai client for whichever Gemini backend is configured.
+
+    Three supported shapes:
+      * Agent Platform express key  -> Client(vertexai=True, api_key="AQ...")
+      * Agent Platform via ADC      -> Client(vertexai=True, project=..., location=...)
+      * AI Studio key               -> Client(api_key="AIza...")
+    """
+    from google import genai
+
+    if USE_VERTEX:
+        if GOOGLE_API_KEY:
+            return genai.Client(vertexai=True, api_key=GOOGLE_API_KEY)
+        return genai.Client(vertexai=True, project=GCP_PROJECT, location=GCP_LOCATION)
+    return genai.Client(api_key=GOOGLE_API_KEY)
 
 
 # One client per thread. A single shared client raises

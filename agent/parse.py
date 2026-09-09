@@ -10,7 +10,7 @@ import datetime
 import json
 import re
 
-from .config import GEMINI_ENABLED, GEMINI_MODEL, GOOGLE_API_KEY
+from .config import GEMINI_ENABLED, GEMINI_MODEL, get_genai_client
 from .schema import ROLES, CrewQuery
 
 IMDB_GENRES = [
@@ -131,10 +131,9 @@ def _rule_based(brief: str) -> CrewQuery:
 def _gemini(brief: str) -> CrewQuery | None:
     """Gemini structured output. Returns None so the caller can fall back."""
     try:
-        from google import genai
         from google.genai import types
 
-        client = genai.Client(api_key=GOOGLE_API_KEY)
+        client = get_genai_client()
         resp = client.models.generate_content(
             model=GEMINI_MODEL,
             contents=brief,

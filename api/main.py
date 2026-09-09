@@ -10,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 
 from agent import queries
-from agent.config import GEMINI_ENABLED, GEMINI_MODEL
+from agent.config import GEMINI_ENABLED, GEMINI_MODEL, gemini_backend
 from agent.graph import run_workflow
 from agent.schema import SearchResult
 
@@ -42,6 +42,7 @@ def health():
         "status": "ok",
         "clickhouse": ch,
         "gemini": "enabled" if GEMINI_ENABLED else "disabled (deterministic fallback active)",
+        "gemini_backend": gemini_backend(),
         "gemini_model": GEMINI_MODEL if GEMINI_ENABLED else None,
     }
 

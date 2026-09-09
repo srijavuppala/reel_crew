@@ -59,7 +59,7 @@ row count on every search.
 | Layer | Choice |
 |---|---|
 | Agent framework | **Google ADK 2.8** `Workflow` — a deterministic four-node graph |
-| LLM | **Gemini** (`gemini-2.5-flash`) for brief parsing and narration |
+| LLM | **Gemini** (`gemini-2.5-flash`) via **Gemini Enterprise Agent Platform** (Vertex AI), or AI Studio |
 | Data | **ClickHouse Cloud**, `clickhouse-connect` called on every request |
 | Backend | FastAPI |
 | Frontend | Single page, no build step |
@@ -102,6 +102,20 @@ Open `http://localhost:8000`. A CLI is available too:
 ```bash
 .venv/bin/python -m agent.graph "editor with at least 5 credits on crime dramas since 2010"
 ```
+
+### Gemini backend
+
+Two backends are supported and auto-detected from the key prefix, because sending one key to
+the other endpoint fails with a misleading 403:
+
+| Key | Backend | Endpoint |
+|---|---|---|
+| `AQ.…` | Gemini Enterprise Agent Platform (Vertex AI) express | `aiplatform.googleapis.com` |
+| `AIza…` | AI Studio Gemini API | `generativelanguage.googleapis.com` |
+
+Set `GOOGLE_GENAI_USE_VERTEXAI=true` to force Agent Platform, or leave `GOOGLE_API_KEY` empty
+and set `GOOGLE_CLOUD_PROJECT` to use application-default credentials instead of a key.
+`GET /api/health` reports which backend is live.
 
 **Gemini is optional.** With no `GOOGLE_API_KEY` the workflow runs end to end on a
 deterministic parser and computed narration, and the UI says so. Adding a key upgrades both

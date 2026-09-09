@@ -24,7 +24,11 @@
 - [x] Keyboard access, focus states, reduced-motion, mobile breakpoint
 - [x] `Dockerfile` + `scripts/deploy_cloudrun.sh`
 - [ ] **Deploy to Cloud Run and capture the hosted URL** — needs `gcloud` (not installed) + a GCP project
-- [ ] Comparison beat recorded: plain Gemini vs the agent (`scripts/compare.py` written, needs `GOOGLE_API_KEY`)
+- [x] Gemini Enterprise Agent Platform (Vertex AI) integrated — express-key and ADC paths,
+      auto-detected from the key prefix, backend reported in `/api/health`
+- [ ] **Enable billing on GCP project 892295257755** — the key authenticates fine, the API
+      returns `BILLING_DISABLED`. This is the only thing gating live Gemini.
+- [ ] Comparison beat recorded: plain Gemini vs the agent (`scripts/compare.py` ready)
 
 ## Phase 3 — Submission
 - [ ] 3-minute demo video (screen recording, functioning product)
@@ -35,8 +39,9 @@
 - [ ] Submit with buffer — not at 4:55pm
 
 ## Blocked on you
-1. **`GOOGLE_API_KEY`** — paste into `.env`. Everything runs without it; the key upgrades
-   parsing and narration from deterministic to Gemini, and unlocks the comparison beat.
+1. **Billing on GCP project 892295257755.** The Agent Platform key is in `.env` and is valid;
+   `aiplatform.googleapis.com` rejects calls with `BILLING_DISABLED` until billing is linked.
+   Until then the agent runs on its deterministic fallback and the UI says `parse: rule-based`.
 2. **GCP project + `gcloud`** — required for the Cloud Run deploy and the hosted URL the
    submission asks for.
 3. **Push target** — repo is committed locally on `main`; tell me the GitHub remote and
