@@ -58,6 +58,15 @@
 - [ ] Demo video public and in English
 - [ ] Submit with buffer — not at 4:55pm
 
+## Script → Screen expansion
+- [x] Product and finance guardrails documented (`PRODUCTION_PRD.md`)
+- [x] Phase 0: screenplay scene breakdown, schedule draft, balanced top sheet, risks
+- [x] Phase 0 API, shared workspace UI, and built-in tests
+- [ ] Phase 1: derive department briefs and connect them to Reel Crew search
+- [ ] Phase 2: persistent estimates, commitments, actuals, approvals, and audit history
+- [ ] Phase 3: availability-aware stripboard and approved call sheets
+- [ ] Phase 4: event-driven replanning with human approval
+
 ## Blocked on you
 1. **Rotate the API key before this goes anywhere public** — it was shared in a chat transcript.
 2. **Public demo video** — record from the stable Cloud Run URL.

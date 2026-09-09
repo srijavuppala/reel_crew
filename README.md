@@ -6,6 +6,12 @@ evidence, and shows the collaborators they normally work with.
 
 **Live demo:** https://reel-crew-10453428907.us-central1.run.app
 
+The app now also includes the first **Script → Screen production workspace**:
+paste a screenplay excerpt with a budget and shoot-day target to generate a shared
+scene breakdown, draft stripboard, balanced top-sheet allowances, and risk register.
+See `PRODUCTION_PRD.md` for the phased path from this deterministic planning foundation
+to crew assignment, persistent actuals and approvals, call sheets, and agentic replanning.
+
 *"Below the line"* is the industry term for crew — DPs, gaffers, editors, ADs, composers —
 as opposed to above-the-line talent.
 
@@ -133,6 +139,12 @@ Open `http://localhost:8000`. A CLI is available too:
 
 ```bash
 .venv/bin/python -m agent.graph "editor with at least 5 credits on crime dramas since 2010"
+```
+
+Run the production-planner tests with no additional test dependency:
+
+```bash
+.venv/bin/python -m unittest -v tests.test_production
 ```
 
 ### Gemini backend

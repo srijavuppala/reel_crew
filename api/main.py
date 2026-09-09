@@ -14,6 +14,8 @@ from agent import queries
 from agent.config import GEMINI_ENABLED, GEMINI_MODEL, gemini_backend
 from agent.graph import run_workflow
 from agent.schema import CrewQuery, SearchResult
+from production.planner import plan_production
+from production.schema import ProductionPlan, ProductionPlanRequest
 
 WEB_DIR = Path(__file__).resolve().parent.parent / "web"
 
@@ -70,6 +72,12 @@ async def search(req: SearchRequest):
         return await run_workflow(json.dumps(payload), limit=req.limit)
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+
+@app.post("/api/production/plan", response_model=ProductionPlan)
+def production_plan(req: ProductionPlanRequest):
+    """Screenplay + constraints -> deterministic schedule, top sheet, and risks."""
+    return plan_production(req)
 
 
 @app.get("/api/profile/{nconst}")
