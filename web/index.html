@@ -374,7 +374,7 @@ async function search(override){
   const brief = $('#brief').value.trim();
   if (brief.length < 3) return;
   $('#go').disabled = $('#apply').disabled = true;
-  $('#status').textContent = override ? 'Re-running with your filters…' : 'Parsing brief, then querying ClickHouse…';
+  $('#status').textContent = override ? 'Re-running with your filters…' : 'Parsing the brief, searching credits, and writing the evidence brief…';
   const t0 = performance.now();
   try {
     const res = await fetch('/api/search', {

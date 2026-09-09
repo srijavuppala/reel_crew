@@ -155,6 +155,7 @@ def _gemini(brief: str) -> CrewQuery | None:
             contents=brief,
             response_schema=CrewQuery,
             temperature=0.0,
+            max_output_tokens=512,
         )
         return _apply_floors(CrewQuery.model_validate(json.loads(text)), brief)
     except Exception as exc:  # noqa: BLE001 - never let the demo die on the LLM

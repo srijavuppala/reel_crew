@@ -61,7 +61,7 @@ row count on every search.
 | Layer | Choice |
 |---|---|
 | Agent framework | **Google ADK 2.8** `Workflow` — a deterministic four-node graph |
-| LLM | **Gemini** (`gemini-2.5-flash`) via **Gemini Enterprise Agent Platform** (Vertex AI), or AI Studio |
+| LLM | **Gemini** (`gemini-2.5-flash-lite`) via **Gemini Enterprise Agent Platform** (Vertex AI), or AI Studio |
 | Data | **ClickHouse Cloud**, `clickhouse-connect` called on every request |
 | Backend | FastAPI |
 | Frontend | Single page, no build step |

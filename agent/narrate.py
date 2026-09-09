@@ -64,6 +64,7 @@ def narrate(q: CrewQuery, cands: list[Candidate]) -> tuple[str, dict[str, str], 
                 system_instruction=NARRATE_INSTRUCTION,
                 contents=json.dumps(payload),
                 temperature=0.2,
+                max_output_tokens=1536,
             )
             data = json.loads(text)
             valid = {c.nconst for c in cands}

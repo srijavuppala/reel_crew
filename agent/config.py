@@ -19,7 +19,8 @@ CH_DATABASE = os.getenv("CLICKHOUSE_DATABASE", "default")
 CH_SECURE = os.getenv("CLICKHOUSE_SECURE", "true").lower() == "true"
 
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY", "").strip()
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+GEMINI_MODEL = os.getenv("GEMINI_MODEL", "gemini-2.5-flash-lite")
+GEMINI_THINKING_BUDGET = int(os.getenv("GEMINI_THINKING_BUDGET", "0"))
 
 # Two Gemini backends exist and the key prefix does NOT tell them apart -- an
 # "AQ." key may be either an AI Studio key or an Agent Platform express key.
@@ -72,7 +73,7 @@ def get_genai_client():
 
 
 def gemini_generate(system_instruction: str, contents: str, response_schema=None,
-                    temperature: float = 0.0) -> str:
+                    temperature: float = 0.0, max_output_tokens: int = 2048) -> str:
     """Call Gemini and return raw text, trying the other backend once on 403.
 
     Centralising the fallback here means parse and narrate never have to know
@@ -85,6 +86,13 @@ def gemini_generate(system_instruction: str, contents: str, response_schema=None
         system_instruction=system_instruction,
         response_mime_type="application/json",
         temperature=temperature,
+        max_output_tokens=max_output_tokens,
+        # These calls are extraction and short evidence summaries. Reasoning
+        # tokens add latency without improving either constrained task.
+        thinking_config=types.ThinkingConfig(
+            thinking_budget=GEMINI_THINKING_BUDGET,
+            include_thoughts=False,
+        ),
     )
     if response_schema is not None:
         cfg.response_schema = response_schema

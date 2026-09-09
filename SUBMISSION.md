@@ -35,7 +35,7 @@ Every candidate links to IMDb for verification.
 
 - **Google ADK Workflow:** a deterministic `parse → search → collaborators → narrate`
   graph. The graph structure is fixed; the model does not choose the candidate set.
-- **Gemini 2.5 Flash:** structured extraction of the production brief and grounded
+- **Gemini 2.5 Flash-Lite:** low-latency structured extraction of the production brief and grounded
   narration of rows already returned by ClickHouse. A deterministic fallback keeps
   the workflow usable without an API key.
 - **ClickHouse Cloud:** 101,655,603 raw principal-credit rows loaded directly from
@@ -85,7 +85,7 @@ added through authorized first-party or partner data; Reel Crew will not infer t
 
 ## Built with
 
-Google Cloud, Gemini 2.5 Flash, Google ADK, ClickHouse Cloud, FastAPI, Python,
+Google Cloud, Gemini 2.5 Flash-Lite, Google ADK, ClickHouse Cloud, FastAPI, Python,
 JavaScript, HTML, CSS, Docker, IMDb public datasets.
 
 ## Links to complete before submission
