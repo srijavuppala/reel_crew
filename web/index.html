@@ -401,6 +401,7 @@ button.go{background:var(--ink);border-radius:9px}.brief-block button.go:after{c
 .report{box-shadow:none}.report-head{background:#FAFAF8}.pill{background:#F0F0EC;color:var(--ink-soft)}
 .listhead h2{font-size:28px}table{box-shadow:0 12px 34px rgba(25,25,29,.045)}
 .roster-panel{background:var(--paper);border:1px solid var(--rule-faint);border-radius:18px;box-shadow:0 18px 50px rgba(25,25,29,.055);overflow:hidden}
+.shortlist-panel{padding:22px 24px;border-bottom:1px solid var(--rule-faint);background:#FAFAF8}.shortlist-head{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:12px}.shortlist-head b{display:block;font-size:18px}.shortlist-head span{font-size:12px;color:var(--ink-soft)}.shortlist-item{display:grid;grid-template-columns:minmax(180px,1.5fr) 1fr auto;gap:14px;align-items:center;padding:12px 0;border-top:1px solid var(--rule-faint)}.shortlist-person{border:0;background:transparent;text-align:left;color:var(--ink);font:inherit;cursor:pointer;padding:0}.shortlist-person b{display:block}.shortlist-person span{display:block;font-size:12px;color:var(--ink-soft)}.shortlist-evidence{font-size:12px;color:var(--ink-soft)}.shortlist-empty{font-size:13px;color:var(--ink-soft);padding:10px 0}.shortlist-action{border:1px solid var(--rule);border-radius:8px;background:var(--paper);padding:8px 10px;font:600 12px var(--sans);cursor:pointer;color:var(--ink)}.shortlist-action:hover{border-color:var(--focus);color:var(--focus)}.shortlist-action:disabled{cursor:default;color:var(--ink-soft);background:#F1F1EE}
 .roster-form{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:24px;border-bottom:1px solid var(--rule-faint)}
 .roster-form-head{grid-column:1/-1}.roster-form-head b{display:block;font-size:18px}.roster-form-head span{display:block;color:var(--ink-soft);font-size:13px;margin-top:2px}
 .roster-form label{font-size:11px;font-weight:700;color:var(--ink-soft);text-transform:uppercase;letter-spacing:.05em}.roster-form input,.roster-form select{display:block;width:100%;margin-top:6px;padding:10px 11px;border:1px solid var(--rule);border-radius:9px;background:#FAFAF8;color:var(--ink);font:14px var(--sans)}
@@ -416,7 +417,7 @@ footer{grid-area:foot}
   .wrap{display:block;padding:16px 18px 90px}.slate{margin-bottom:16px}.slate .sub{display:none}.counts{display:none}
   .app-nav{position:static;display:flex;flex-direction:row;margin:0 0 34px;padding:5px;background:#E8E8E4;border-radius:12px}.nav-label{display:none}.app-nav button{text-align:center}.app-nav button:before,.app-nav button[aria-selected="true"]:after{display:none}.roster-form{grid-template-columns:1fr 1fr}.roster-row{grid-template-columns:1.4fr 1fr 100px 36px}.roster-row .roster-contact,.roster-row .roster-notes{display:none}.command-grid{grid-template-columns:1fr 1fr}.agent-flow{grid-template-columns:repeat(3,1fr)}.agent-step:nth-child(3):after{display:none}
 }
-@media(max-width:600px){.page-title{font-size:40px}.page-intro{font-size:15px}.brief-block,.prod-body{padding:18px}.prod-grid{grid-template-columns:1fr}.prod-cards{grid-template-columns:1fr 1fr}.app-nav{overflow-x:auto}.app-nav button{white-space:nowrap}.roster-form{grid-template-columns:1fr}.roster-form .wide{grid-column:auto}.roster-summary{grid-template-columns:1fr 1fr 1fr}.roster-stat{padding:12px}.roster-row{grid-template-columns:1fr 94px 30px}.roster-row .roster-rate{display:none}.command-hero{display:block}.command-state{margin-top:12px}.command-grid{grid-template-columns:1fr 1fr}.agent-flow{grid-template-columns:1fr}.agent-step:after{display:none!important}}
+@media(max-width:600px){.page-title{font-size:40px}.page-intro{font-size:15px}.brief-block,.prod-body{padding:18px}.prod-grid{grid-template-columns:1fr}.prod-cards{grid-template-columns:1fr 1fr}.app-nav{overflow-x:auto}.app-nav button{white-space:nowrap}.roster-form{grid-template-columns:1fr}.roster-form .wide{grid-column:auto}.roster-summary{grid-template-columns:1fr 1fr 1fr}.roster-stat{padding:12px}.roster-row{grid-template-columns:1fr 94px 30px}.roster-row .roster-rate{display:none}.shortlist-head{align-items:flex-start}.shortlist-item{grid-template-columns:1fr auto}.shortlist-evidence{display:none}.command-hero{display:block}.command-state{margin-top:12px}.command-grid{grid-template-columns:1fr 1fr}.agent-flow{grid-template-columns:1fr}.agent-step:after{display:none!important}}
 </style>
 </head>
 <body>
@@ -534,6 +535,10 @@ Customers watch Maya confront JOHN. They fight near the kitchen fire.</textarea>
     <h2 class="page-title">Manage the crew</h2>
     <p class="page-intro">Keep confirmed people, contact details, availability, rates, and production status together. This roster is saved on this device.</p>
     <section class="roster-panel">
+      <div class="shortlist-panel">
+        <div class="shortlist-head"><div><b>Discovery shortlist</b><span>Candidates saved from credit-backed search.</span></div><span id="shortlist-count">0 candidates</span></div>
+        <div id="shortlist-list"></div>
+      </div>
       <form class="roster-form" id="roster-form">
         <div class="roster-form-head"><div><b>Add a crew member</b><span>Build the working roster for this production.</span></div></div>
         <label>Name<input id="r-name" required placeholder="Full name"></label>
@@ -596,7 +601,9 @@ const EXAMPLES = [
 let LAST = null;                       // last SearchResult
 let LIMIT = 12;                        // rows requested
 let SORT = { key: null, dir: -1 };     // null = keep ClickHouse ranking
-const PINNED = new Map();              // nconst -> candidate
+let SAVED_SHORTLIST = [];
+try { SAVED_SHORTLIST = JSON.parse(localStorage.getItem('reel-crew-shortlist') || '[]'); } catch (_) { SAVED_SHORTLIST = []; }
+const PINNED = new Map(SAVED_SHORTLIST.filter(c => c.nconst).map(c => [c.nconst, c]));
 let PRODUCTION_PLAN = null;
 
 function showWorkspace(page, updateHash=true){
@@ -621,6 +628,10 @@ showWorkspace(['#production','#roster'].includes(location.hash) ? location.hash.
 let ROSTER = [];
 try { ROSTER = JSON.parse(localStorage.getItem('reel-crew-roster') || '[]'); } catch (_) { ROSTER = []; }
 function saveRoster(){ localStorage.setItem('reel-crew-roster', JSON.stringify(ROSTER)); renderRoster(); }
+function saveShortlist(){
+  localStorage.setItem('reel-crew-shortlist', JSON.stringify([...PINNED.values()]));
+  renderDock(); renderRoster();
+}
 function renderRoster(){
   const confirmed = ROSTER.filter(m => m.status === 'Confirmed').length;
   const departments = new Set(ROSTER.map(m => m.department)).size;
@@ -634,6 +645,16 @@ function renderRoster(){
     <div class="roster-cell roster-rate">${m.rate ? '$'+fmt(+m.rate)+'/day' : 'Rate TBD'}</div>
     <button class="roster-remove" data-remove="${m.id}" aria-label="Remove ${esc(m.name)}">×</button>
   </div>`).join('') : '<div class="roster-empty">No crew added yet. Add the first working crew member above.</div>';
+  const shortlist = [...PINNED.values()];
+  $('#shortlist-count').textContent = `${shortlist.length} candidate${shortlist.length===1?'':'s'}`;
+  $('#shortlist-list').innerHTML = shortlist.length ? shortlist.map(c => {
+    const added = ROSTER.some(m => m.sourceNconst === c.nconst);
+    return `<div class="shortlist-item">
+      <button class="shortlist-person" data-profile="${esc(c.nconst)}"><b>${esc(c.name)}</b><span>${esc((c.role||'crew').replace(/_/g,' '))} · ${esc((c.genres||[]).join(' / ')||'all genres')}</span></button>
+      <div class="shortlist-evidence">${c.genre_credits} matching credits · ${c.avg_rating} avg · active through ${c.most_recent}</div>
+      <button class="shortlist-action" data-promote="${esc(c.nconst)}" ${added?'disabled':''}>${added?'In working roster':'Add to working roster'}</button>
+    </div>`;
+  }).join('') : '<div class="shortlist-empty">Shortlist candidates from Crew Discovery and they will appear here.</div>';
 }
 $('#roster-form').addEventListener('submit', e => {
   e.preventDefault();
@@ -643,6 +664,14 @@ $('#roster-form').addEventListener('submit', e => {
 $('#roster-list').addEventListener('click', e => {
   const button=e.target.closest('[data-remove]'); if(!button) return;
   ROSTER=ROSTER.filter(m => m.id !== button.dataset.remove); saveRoster();
+});
+$('#shortlist-list').addEventListener('click', e => {
+  const profile=e.target.closest('[data-profile]');
+  if(profile){ openProfile(profile.dataset.profile); return; }
+  const button=e.target.closest('[data-promote]'); if(!button) return;
+  const c=PINNED.get(button.dataset.promote); if(!c) return;
+  ROSTER.unshift({id:String(Date.now()),sourceNconst:c.nconst,name:c.name,department:(c.role||'Crew').replace(/_/g,' '),role:(c.role||'Crew').replace(/_/g,' '),contact:'',rate:0,status:'Considering',notes:`IMDb credit-backed shortlist · ${c.genre_credits} matching credits · ${c.avg_rating} average rating`});
+  saveRoster();
 });
 renderRoster();
 
@@ -1009,7 +1038,7 @@ function wireResults(){
         const c = (LAST.candidates || []).find(x => x.nconst === id);
         if (c) PINNED.set(id, { ...c, role: LAST.query.role, genres: LAST.query.genres });
       }
-      render(0);
+      saveShortlist(); render(0);
     });
   });
   $('#out').querySelectorAll('.member').forEach(m =>
@@ -1029,7 +1058,7 @@ function renderDock(){
   $('#dock-n').textContent = n;
   $('#dock-names').textContent = [...PINNED.values()].map(c => c.name).join(', ');
 }
-$('#clear').addEventListener('click', () => { PINNED.clear(); render(0); });
+$('#clear').addEventListener('click', () => { PINNED.clear(); saveShortlist(); render(0); });
 $('#export').addEventListener('click', () => {
   const head = ['name','role','matched_genres','matching_credits','total_credits','avg_rating',
                 'votes_reached','most_recent','notable_titles','imdb_url'];
