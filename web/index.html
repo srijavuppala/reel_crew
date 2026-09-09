@@ -47,6 +47,10 @@ body{
 .slate .sub{font-family:var(--mono);font-size:13px;color:var(--ink-soft);margin-top:7px;max-width:56ch}
 .counts{display:flex;gap:26px;font-family:var(--mono);font-size:12px;color:var(--ink-soft);text-align:right}
 .counts b{display:block;font-family:var(--sans);font-weight:600;font-size:21px;color:var(--ink);line-height:1.1}
+.app-nav{display:flex;gap:4px;margin:-10px 0 22px;border-bottom:1px solid var(--rule)}
+.app-nav button,.plan-nav button{border:0;background:transparent;color:var(--ink-soft);padding:10px 14px;font:600 13px var(--mono);cursor:pointer;border-bottom:3px solid transparent}
+.app-nav button[aria-selected="true"],.plan-nav button[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--goldenrod)}
+.page[hidden],.plan-page[hidden]{display:none}.page-title{margin:0 0 4px;font-size:25px}.page-intro{margin:0 0 18px;color:var(--ink-soft);font:13px var(--mono);max-width:75ch}
 
 /* ---------- the brief ---------- */
 .brief-block{background:var(--paper);border:1px solid var(--rule);padding:18px}
@@ -95,8 +99,7 @@ input[type=range]{width:100%;accent-color:var(--goldenrod)}
 }
 .gpick button[aria-pressed="true"]{background:var(--goldenrod);border-color:var(--goldenrod);color:#1C2126;font-weight:700}
 .fbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:0 14px 14px}
-.prod{margin-top:18px;border:1px solid var(--rule);background:var(--paper)}
-.prod>summary{padding:13px 16px;font-weight:700;font-size:17px}
+.prod{border:1px solid var(--rule);background:var(--paper)}
 .prod-body{padding:16px}.prod-grid{display:grid;grid-template-columns:2fr repeat(3,1fr);gap:12px}
 .prod-grid label{font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
 .prod-grid input,.prod-grid select{display:block;width:100%;margin-top:5px;padding:8px;border:1px solid var(--rule);background:var(--stock);color:var(--ink);font:13px var(--mono)}
@@ -104,6 +107,8 @@ input[type=range]{width:100%;accent-color:var(--goldenrod)}
 .prod-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:9px;margin:14px 0}
 .prod-card{border:1px solid var(--rule-faint);padding:10px}.prod-card b{display:block;font-size:21px}.prod-card span{font:11px var(--mono);color:var(--ink-soft)}
 .prod-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px}.prod-list{font:12px/1.5 var(--mono);padding-left:18px}
+.plan-nav{display:flex;gap:3px;overflow-x:auto;border-bottom:1px solid var(--rule);margin:16px 0 10px}.plan-nav button{white-space:nowrap}
+.plan-page{min-height:260px}.plan-empty{padding:28px 0;color:var(--ink-soft);font:14px var(--mono)}
 @media(max-width:760px){.prod-grid,.prod-cols{grid-template-columns:1fr}}
 
 /* ---------- trace / report ---------- */
@@ -246,6 +251,15 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--rule);font-fa
     </div>
   </header>
 
+  <nav class="app-nav" aria-label="Workspace pages">
+    <button data-page="crew" aria-selected="true">Crew discovery</button>
+    <button data-page="production" aria-selected="false">Production plan</button>
+  </nav>
+
+  <main class="page" id="page-crew">
+    <h2 class="page-title">Crew discovery</h2>
+    <p class="page-intro">Search verified film credits, inspect evidence, and assemble a working department.</p>
+
   <section class="brief-block">
     <label class="lbl" for="brief">Production brief</label>
     <textarea id="brief" spellcheck="false">I need a DP who has shot three or more horror features rated above 6.5 in the last eight years</textarea>
@@ -289,8 +303,13 @@ footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--rule);font-fa
     </div>
   </details>
 
-  <details class="prod" id="production">
-    <summary>Script → Screen production workspace</summary>
+  <div id="out"></div>
+  </main>
+
+  <main class="page" id="page-production" hidden>
+    <h2 class="page-title">Production plan</h2>
+    <p class="page-intro">Turn one screenplay into separate, readable views for schedule, finance, scenes, and production risk.</p>
+  <section class="prod" id="production">
     <div class="prod-body">
       <p class="lbl">Paste a screenplay excerpt to build one shared scene, schedule, finance, and risk plan. All money is a planning allowance—not an actual, bid, or payment.</p>
       <div class="prod-grid">
@@ -308,11 +327,17 @@ Maya drives the car through rain as two passengers run after her.
 INT. DINER - DAY
 Customers watch Maya confront JOHN. They fight near the kitchen fire.</textarea>
       <div class="row"><button class="go" id="p-plan">Build production plan</button><span class="lbl" id="p-status"></span></div>
-      <div id="p-out"></div>
+      <nav class="plan-nav" id="plan-nav" aria-label="Production plan pages" hidden>
+        <button data-plan-page="overview" aria-selected="true">Overview</button>
+        <button data-plan-page="schedule" aria-selected="false">Schedule</button>
+        <button data-plan-page="budget" aria-selected="false">Budget</button>
+        <button data-plan-page="scenes" aria-selected="false">Scenes</button>
+        <button data-plan-page="risks" aria-selected="false">Risks & assumptions</button>
+      </nav>
+      <div id="p-out"><p class="plan-empty">Build a plan to open the production pages.</p></div>
     </div>
-  </details>
-
-  <div id="out"></div>
+  </section>
+  </main>
 
   <footer>
     Credit data: IMDb public datasets (datasets.imdbws.com), used under their personal and non-commercial licence. Refreshed daily.<br>
@@ -355,6 +380,25 @@ let LAST = null;                       // last SearchResult
 let LIMIT = 12;                        // rows requested
 let SORT = { key: null, dir: -1 };     // null = keep ClickHouse ranking
 const PINNED = new Map();              // nconst -> candidate
+let PRODUCTION_PLAN = null;
+
+function showWorkspace(page, updateHash=true){
+  const selected = page === 'production' ? 'production' : 'crew';
+  document.querySelectorAll('.page').forEach(p => p.hidden = p.id !== `page-${selected}`);
+  document.querySelectorAll('[data-page]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.page === selected)));
+  $('#dock').style.display = selected === 'crew' && PINNED.size ? '' : 'none';
+  if (updateHash) history.replaceState(null, '', selected === 'production' ? '#production' : '#crew');
+}
+document.querySelectorAll('[data-page]').forEach(b => b.addEventListener('click', () => showWorkspace(b.dataset.page)));
+
+function showPlanPage(name){
+  document.querySelectorAll('.plan-page').forEach(p => p.hidden = p.dataset.plan !== name);
+  document.querySelectorAll('[data-plan-page]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.planPage === name)));
+}
+$('#plan-nav').addEventListener('click', e => {
+  const b=e.target.closest('[data-plan-page]'); if (b) showPlanPage(b.dataset.planPage);
+});
+showWorkspace(location.hash === '#production' ? 'production' : 'crew', false);
 
 /* ------------------------------------------------------ production workspace */
 $('#p-plan').addEventListener('click', async () => {
@@ -367,18 +411,20 @@ $('#p-plan').addEventListener('click', async () => {
       target_shoot_days:+$('#p-days').value
     })});
     if (!response.ok) throw new Error((await response.json()).detail || response.statusText);
-    const p = await response.json(), money = n => new Intl.NumberFormat(undefined,{style:'currency',currency:p.currency,maximumFractionDigits:0}).format(n);
-    $('#p-out').innerHTML = `<div class="prod-cards">
+    const p = PRODUCTION_PLAN = await response.json(), money = n => new Intl.NumberFormat(undefined,{style:'currency',currency:p.currency,maximumFractionDigits:0}).format(n);
+    $('#plan-nav').hidden = false;
+    $('#p-out').innerHTML = `<section class="plan-page" data-plan="overview"><div class="prod-cards">
       <div class="prod-card"><b>${p.summary.scene_count}</b><span>scenes</span></div>
       <div class="prod-card"><b>${p.summary.estimated_pages}</b><span>estimated pages</span></div>
       <div class="prod-card"><b>${p.summary.planned_shoot_days}</b><span>planned shoot days</span></div>
       <div class="prod-card"><b>${money(p.summary.total_budget)}</b><span>planning budget</span></div>
       <div class="prod-card"><b>${money(p.summary.budget_per_shoot_day)}</b><span>budget / shoot day</span></div>
-    </div><div class="prod-cols"><div><h4>Stripboard draft</h4><ol class="prod-list">${p.schedule.map(d=>`<li><b>Day ${d.day}</b> · scenes ${d.scene_numbers.join(', ')} · ${esc(d.location)} · ${d.estimated_pages} pages${d.warning?`<br><span style="color:var(--pink)">${esc(d.warning)}</span>`:''}</li>`).join('')}</ol>
-      <h4>Risks requiring review</h4><ul class="prod-list">${p.risks.map(r=>`<li><b>${esc(r.severity.toUpperCase())} · ${esc(r.area)}</b> — ${esc(r.issue)} ${esc(r.mitigation)}</li>`).join('')||'<li>No automatic signals; human review still required.</li>'}</ul></div>
-      <div><h4>Top-sheet allowances</h4><ul class="prod-list">${p.budget.map(b=>`<li>${esc(b.category)} — <b>${money(b.amount)}</b> (${b.percent}%)</li>`).join('')}</ul>
-      <h4>Scene breakdown</h4><ol class="prod-list">${p.scenes.map(s=>`<li><b>${esc(s.heading)}</b> · ${s.estimated_pages} pages${s.requirements.length?`<br>${esc(s.requirements.join(' · '))}`:''}</li>`).join('')}</ol></div></div>
-      <details><summary>Planning assumptions</summary><ul class="prod-list">${p.assumptions.map(a=>`<li>${esc(a)}</li>`).join('')}</ul></details>`;
+    </div><div class="prod-cols"><div><h4>Production footprint</h4><ul class="prod-list"><li>${p.summary.location_count} locations</li><li>${p.summary.exterior_scenes} exterior scenes</li><li>${p.summary.night_scenes} night/twilight scenes</li></ul></div><div><h4>Plan status</h4><p class="lbl">Draft · human review required before this becomes a production baseline.</p></div></div></section>
+      <section class="plan-page" data-plan="schedule" hidden><h4>Stripboard draft</h4><ol class="prod-list">${p.schedule.map(d=>`<li><b>Day ${d.day}</b> · scenes ${d.scene_numbers.join(', ')} · ${esc(d.location)} · ${esc(d.time_of_day)} · ${d.estimated_pages} pages${d.warning?`<br><span style="color:var(--pink)">${esc(d.warning)}</span>`:''}</li>`).join('')}</ol></section>
+      <section class="plan-page" data-plan="budget" hidden><h4>Top-sheet allowances</h4><ul class="prod-list">${p.budget.map(b=>`<li>${esc(b.category)} — <b>${money(b.amount)}</b> (${b.percent}%)<br><span class="lbl">${esc(b.basis)}</span></li>`).join('')}</ul><p class="lbl">Total: ${money(p.budget.reduce((n,b)=>n+b.amount,0))}. Planning allowances only.</p></section>
+      <section class="plan-page" data-plan="scenes" hidden><h4>Scene breakdown</h4><ol class="prod-list">${p.scenes.map(s=>`<li><b>${esc(s.heading)}</b> · ${s.estimated_pages} pages<br><span class="lbl">${esc(s.interior_exterior)} · ${esc(s.location)} · ${esc(s.time_of_day)}${s.requirements.length?' · '+esc(s.requirements.join(' · ')):''}</span></li>`).join('')}</ol></section>
+      <section class="plan-page" data-plan="risks" hidden><h4>Risks requiring review</h4><ul class="prod-list">${p.risks.map(r=>`<li><b>${esc(r.severity.toUpperCase())} · ${esc(r.area)}</b> — ${esc(r.issue)}<br>${esc(r.mitigation)}</li>`).join('')||'<li>No automatic signals; human review still required.</li>'}</ul><h4>Planning assumptions</h4><ul class="prod-list">${p.assumptions.map(a=>`<li>${esc(a)}</li>`).join('')}</ul></section>`;
+    showPlanPage('overview');
   } catch(err) { $('#p-out').innerHTML=`<div class="msg bad"><b>Production plan unavailable.</b>${esc(err.message)}</div>`; }
   finally { button.disabled=false; $('#p-status').textContent=''; }
 });
