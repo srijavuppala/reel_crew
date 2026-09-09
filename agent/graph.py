@@ -8,6 +8,8 @@ never the control flow and never the candidate set.
 """
 from __future__ import annotations
 
+import asyncio
+
 import json
 import time
 from typing import Optional
@@ -209,6 +211,19 @@ async def run_workflow(brief: str, limit: int = 12) -> SearchResult:
         print(f"[graph] ADK runtime path unavailable ({exc}); using direct node execution")
     res = run_direct(brief, limit)
     return res
+
+
+def run_workflow_sync(brief: str, limit: int = 12) -> SearchResult:
+    """Blocking entry point for the web API.
+
+    The workflow is declared async, but the node bodies are not: they call
+    Gemini and the MCP server over blocking I/O. Awaiting them from a FastAPI
+    `async def` handler runs that blocking work on the event loop, which
+    serialises every concurrent request -- six searches measured 18.5s against
+    3.9s for one. A plain `def` endpoint gets its own worker thread instead, and
+    this gives that thread its own loop to run the workflow in.
+    """
+    return asyncio.run(run_workflow(brief, limit))
 
 
 if __name__ == "__main__":

@@ -5,6 +5,7 @@ import re
 from collections import defaultdict
 
 from .roles import derive_roles, infer_brief
+from .slugline import SEPARATOR, TIME_WORDS, NIGHT_TIMES, normalise
 from .schema import (
     BudgetLine, ChangeImpact, ProductionPlan, ProductionPlanRequest, Risk, Scene, ShootDay,
 )
@@ -24,11 +25,11 @@ BUDGET_SHARES = [
 
 
 def _scene_parts(heading: str) -> tuple[str, str, str]:
-    clean = re.sub(r"\s+", " ", heading.strip().upper())
+    clean = normalise(heading)
     ie = "INT/EXT" if clean.startswith(("INT/EXT", "I/E")) else ("EXT" if clean.startswith("EXT") else "INT")
     rest = re.sub(r"^(?:INT\.?/EXT\.?|INT\.?|EXT\.?|I/E)\s+", "", clean)
-    chunks = [x.strip() for x in re.split(r"\s+-\s+", rest)]
-    tod = chunks[-1] if chunks and chunks[-1] in {"DAY", "NIGHT", "DAWN", "DUSK", "CONTINUOUS", "LATER"} else "UNSPECIFIED"
+    chunks = [x.strip() for x in SEPARATOR.split(rest)]
+    tod = chunks[-1] if chunks and chunks[-1] in TIME_WORDS else "UNSPECIFIED"
     location = " - ".join(chunks[:-1]) if tod != "UNSPECIFIED" else rest
     return ie, location or "UNSPECIFIED", tod
 
@@ -49,7 +50,7 @@ def _requirements(body: str, ie: str, tod: str) -> list[str]:
             req.append(label)
     if ie != "INT":
         req.append("weather cover")
-    if tod in {"NIGHT", "DAWN", "DUSK"}:
+    if tod in NIGHT_TIMES:
         req.append("night lighting")
     return req
 
@@ -111,7 +112,7 @@ def build_budget(total: int) -> list[BudgetLine]:
 def assess_risks(scenes: list[Scene], schedule: list[ShootDay], budget: int, days: int) -> list[Risk]:
     risks = []
     exteriors = sum(s.interior_exterior != "INT" for s in scenes)
-    night = sum(s.time_of_day in {"NIGHT", "DAWN", "DUSK"} for s in scenes)
+    night = sum(s.time_of_day in NIGHT_TIMES for s in scenes)
     stunts = sum("stunts/safety" in s.requirements for s in scenes)
     if exteriors:
         risks.append(Risk(severity="medium", area="locations", issue=f"{exteriors} exterior scene(s) depend on weather and permits.", mitigation="Hold weather cover and confirm permit lead times."))
@@ -159,6 +160,6 @@ def plan_production(req: ProductionPlanRequest) -> ProductionPlan:
                  "total_budget": req.total_budget, "budget_per_shoot_day": old_daily,
                  "location_count": len({s.location for s in scenes}),
                  "exterior_scenes": sum(s.interior_exterior != "INT" for s in scenes),
-                 "night_scenes": sum(s.time_of_day in {"NIGHT", "DAWN", "DUSK"} for s in scenes)},
+                 "night_scenes": sum(s.time_of_day in NIGHT_TIMES for s in scenes)},
         change_impact=change,
     )

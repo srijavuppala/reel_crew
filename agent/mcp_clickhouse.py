@@ -2,20 +2,36 @@
 
 The web API stays synchronous at the query boundary, while every production
 query crosses the MCP protocol and is executed by ClickHouse's official server.
+
+A stdio server is one process speaking one conversation at a time, so a single
+client serialises every request in the app: six concurrent searches measured
+18.3s wall clock against 3.9s for one. Requests are therefore handed to a small
+pool of servers. Processes spawn on first use, so a single-user session still
+pays for exactly one.
 """
 from __future__ import annotations
 
 import atexit
+import contextlib
 import json
 import os
+import queue
 import re
+import select
 import subprocess
 import sys
 import threading
 from typing import Any
 
+# A query that has not answered in this long is not slow, it is wedged: the
+# ranking queries return in well under a second.
+READ_TIMEOUT = float(os.getenv("MCP_READ_TIMEOUT", "90"))
+POOL_SIZE = max(1, int(os.getenv("MCP_POOL_SIZE", "3")))
+
 
 class ClickHouseMCP:
+    """One mcp-clickhouse subprocess. The pool owns access; do not share directly."""
+
     def __init__(self) -> None:
         self._process: subprocess.Popen[str] | None = None
         self._lock = threading.Lock()
@@ -50,6 +66,21 @@ class ClickHouseMCP:
         self._process.stdin.write(json.dumps(message, separators=(",", ":")) + "\n")
         self._process.stdin.flush()
 
+    def _readline(self) -> str:
+        """Read one line, giving up rather than blocking a worker indefinitely.
+
+        The server writes newline-delimited JSON, so a ready fd means a whole
+        line is on its way; select only guards against nothing arriving at all.
+        """
+        stdout = self._process.stdout if self._process else None
+        if stdout is None:
+            raise RuntimeError("mcp-clickhouse process is unavailable")
+        ready, _, _ = select.select([stdout], [], [], READ_TIMEOUT)
+        if not ready:
+            self.close()
+            raise TimeoutError(f"mcp-clickhouse did not respond within {READ_TIMEOUT:g}s")
+        return stdout.readline()
+
     def _request(self, method: str, params: dict[str, Any]) -> dict[str, Any]:
         if not self._process or not self._process.stdout:
             raise RuntimeError("mcp-clickhouse process is unavailable")
@@ -57,7 +88,7 @@ class ClickHouseMCP:
         request_id = self._id
         self._send({"jsonrpc": "2.0", "id": request_id, "method": method, "params": params})
         while True:
-            line = self._process.stdout.readline()
+            line = self._readline()
             if not line:
                 raise RuntimeError("mcp-clickhouse stopped before responding")
             try:
@@ -96,11 +127,41 @@ class ClickHouseMCP:
             process.terminate()
 
 
-_MCP = ClickHouseMCP()
+class _Pool:
+    """Hands out servers, creating at most POOL_SIZE of them.
+
+    Each holds ~110 MB resident once started, which is why the size is modest
+    and configurable rather than one server per request.
+    """
+
+    def __init__(self, size: int) -> None:
+        self._free: queue.Queue[ClickHouseMCP] = queue.Queue()
+        for _ in range(size):
+            self._free.put(ClickHouseMCP())   # process spawns lazily on first query
+        atexit.register(self.close)
+
+    @contextlib.contextmanager
+    def borrow(self):
+        client = self._free.get()
+        try:
+            yield client
+        finally:
+            self._free.put(client)
+
+    def close(self) -> None:
+        while True:
+            try:
+                self._free.get_nowait().close()
+            except queue.Empty:
+                return
+
+
+_POOL = _Pool(POOL_SIZE)
 
 
 def run_query(sql: str) -> tuple[list[str], list[list[Any]]]:
-    payload = _MCP.query(sql)
+    with _POOL.borrow() as client:
+        payload = client.query(sql)
     return payload.get("columns", []), payload.get("rows", [])
 
 

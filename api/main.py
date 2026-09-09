@@ -12,7 +12,7 @@ from pydantic import BaseModel, Field
 
 from agent import queries
 from agent.config import GEMINI_ENABLED, GEMINI_MODEL, gemini_backend
-from agent.graph import run_workflow
+from agent.graph import run_workflow_sync
 from agent.schema import CrewQuery, SearchResult
 from production.crew import build_crew
 from production.planner import break_down, plan_production
@@ -70,13 +70,17 @@ def stats():
 
 
 @app.post("/api/search", response_model=SearchResult)
-async def search(req: SearchRequest):
-    """Brief in -> parsed query, ranked candidates, package, narration, trace."""
+def search(req: SearchRequest):
+    """Brief in -> parsed query, ranked candidates, package, narration, trace.
+
+    Deliberately a plain `def`: the workflow blocks on Gemini and on the MCP
+    server, so FastAPI runs it in a worker thread rather than on the event loop.
+    """
     try:
         payload = req.query.model_dump() if req.query is not None else {}
         payload["_brief"] = req.brief
         payload["_limit"] = req.limit
-        return await run_workflow(json.dumps(payload), limit=req.limit)
+        return run_workflow_sync(json.dumps(payload), limit=req.limit)
     except Exception as exc:  # noqa: BLE001
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 

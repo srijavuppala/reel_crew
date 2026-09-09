@@ -15,6 +15,7 @@ from __future__ import annotations
 import re
 
 from agent.parse import GENRE_SYNONYMS
+from .slugline import NIGHT_TIMES
 from .schema import ProductionBrief, RoleRequirement, Scene
 
 # --------------------------------------------------------------- staffable
@@ -128,7 +129,7 @@ def infer_brief(screenplay: str, scenes: list[Scene]) -> ProductionBrief:
             hits.append((count, genre))
 
     signals = {r for s in scenes for r in s.requirements}
-    night = sum(s.time_of_day in {"NIGHT", "DAWN", "DUSK"} for s in scenes)
+    night = sum(s.time_of_day in NIGHT_TIMES for s in scenes)
     # Scene composition is a stronger genre signal than vocabulary: a script that
     # is mostly night exteriors with weapons is a thriller whatever words it uses.
     if "stunts/safety" in signals:
