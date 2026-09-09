@@ -19,6 +19,16 @@ fi
 # project variable instead of requiring a second spelling only for deployment.
 GCP_PROJECT="${GCP_PROJECT:-${GOOGLE_CLOUD_PROJECT:-}}"
 : "${GCP_PROJECT:?Set GOOGLE_CLOUD_PROJECT=your-project-id in .env}"
+# Cloud client libraries accept a project number in some contexts, but the
+# `gcloud run deploy --project` flag requires the textual project ID.
+if [[ "$GCP_PROJECT" =~ ^[0-9]+$ ]]; then
+  CONFIGURED_PROJECT="$("$GCLOUD" config get-value project 2>/dev/null)"
+  if [[ -z "$CONFIGURED_PROJECT" || "$CONFIGURED_PROJECT" == "(unset)" || "$CONFIGURED_PROJECT" =~ ^[0-9]+$ ]]; then
+    echo "GOOGLE_CLOUD_PROJECT is a project number; set it to the project ID." >&2
+    exit 1
+  fi
+  GCP_PROJECT="$CONFIGURED_PROJECT"
+fi
 REGION="${GCP_REGION:-us-central1}"
 SERVICE="${SERVICE_NAME:-reel-crew}"
 

@@ -39,7 +39,8 @@
 - [x] Keyboard access, focus states, reduced-motion, mobile breakpoint
 - [x] `Dockerfile` + `scripts/deploy_cloudrun.sh`
 - [x] Google Cloud CLI installed and authenticated (deploy script resolves Homebrew's cask path)
-- [ ] **Deploy to Cloud Run and capture the hosted URL** — needs an authenticated GCP project
+- [ ] **Deploy to Cloud Run and capture the hosted URL** — billing must be linked to
+      `gkehackathon-471322`; authentication and deployment script are ready
 - [x] Gemini Enterprise Agent Platform (Vertex AI) integrated — express-key and ADC paths,
       auto-detected from the key prefix, backend reported in `/api/health`
 - [x] **Gemini live** — AI Studio key working; parse and narrate both run on gemini-2.5-flash
@@ -59,8 +60,8 @@
 
 ## Blocked on you
 1. **Rotate the API key before this goes anywhere public** — it was shared in a chat transcript.
-2. **GCP project + `gcloud`** — required for the Cloud Run deploy and the hosted URL the
-   submission asks for.
+2. **Enable billing on `gkehackathon-471322`** — Google Cloud currently rejects Cloud Run,
+   Cloud Build, and Artifact Registry API activation with `UREQ_PROJECT_BILLING_NOT_FOUND`.
 3. **Public demo video** — record after the hosted URL is stable.
 
 ## Open decisions from the PRD
