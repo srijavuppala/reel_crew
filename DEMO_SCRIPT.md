@@ -69,7 +69,9 @@ Point at the split between the staffed slates and the reported roles.
 > reported with the reason and the scene, not quietly dropped. We would rather show a
 > producer the gap than pretend we filled it.
 
-Open the **Director of Photography** slate and its funnel.
+Press **Build my crew**, wait for the slates, then open the **Director of Photography**
+slate and its funnel. **The slates do not exist until you press that button** — the role
+lists above render on their own, the ranked candidates do not.
 
 > And here is the part that is not a language model. ClickHouse narrows the corpus stage
 > by stage — everyone in the craft, then the genre, then the rating, credit and vote
@@ -135,6 +137,7 @@ and 8 intact. Beat 4 is the submission — everything else is context around it.
 |---|---|
 | Header counters blank | Load `/api/health` first; confirm ClickHouse is connected |
 | Cold Cloud Run start makes beat 3 hang | Build the plan once before recording to warm the container |
+| Beat 4 stalls on **Build my crew** | It is a second live call, one query per staffable role — run it once to warm it too |
 | A role slate comes back thin | DP and Editor are the reliable ones — rehearse on those, not Casting Director |
 | Funnel text too small | Zoom to 110–125% before the take, not during |
 | Gemini quota drops mid-take | The deterministic parser still runs; if the badge flips, say so rather than reshooting |
@@ -143,7 +146,7 @@ and 8 intact. Beat 4 is the submission — everything else is context around it.
 
 - [x] Hosted URL is live: https://reel-crew-10453428907.us-central1.run.app
 - [ ] `/api/health` reports ClickHouse connected and the intended Gemini backend
-- [ ] Plan built once to warm the container, then browser refreshed
+- [ ] Plan built once **and crew built once** to warm both calls, then browser refreshed
 - [ ] The rehearsed role slate returns good candidates
 - [ ] Notifications and bookmarks hidden
 - [ ] Final cut is at most three minutes, clear audio or subtitles
